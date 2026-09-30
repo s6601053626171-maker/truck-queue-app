@@ -103,6 +103,16 @@
   .btn-action { padding: 6px 12px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff; font-size: 0.8rem; font-weight: 600; cursor: pointer; }
   .btn-action.cancel { color: #ef4444; border-color: #fca5a5; }
 
+  /* MODAL QR CODE GATE PASS */
+  .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 999; padding: 16px; }
+  .modal-card { background: #ffffff; border-radius: 20px; max-width: 400px; width: 100%; padding: 28px 24px; text-align: center; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); position: relative; animation: popIn 0.25s ease-out; }
+  @keyframes popIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+  .pass-badge { background: #dcfce7; color: #15803d; font-size: 0.82rem; font-weight: 700; padding: 4px 12px; border-radius: 20px; display: inline-block; margin-bottom: 8px; }
+  .qr-box { background: #ffffff; border: 2px dashed #cbd5e1; border-radius: 16px; padding: 16px; margin: 16px auto; display: inline-block; box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
+  .qr-box img { display: block; margin: 0 auto; width: 180px; height: 180px; }
+  .pass-info { background: #f8fafc; border-radius: 12px; padding: 14px; text-align: left; font-size: 0.88rem; color: #334155; margin-bottom: 20px; line-height: 1.6; }
+  .btn-close-modal { width: 100%; background: #3b82f6; color: white; border: none; padding: 12px; border-radius: 10px; font-weight: 700; font-size: 0.95rem; cursor: pointer; }
+
   .hidden { display: none !important; }
 </style>
 </head>
@@ -154,26 +164,26 @@
 
     <div class="zone-header">โซน A - รถบรรทุกใหญ่</div>
     <div class="slots-grid">
-      <button class="slot-btn" onclick="selectSlot('A1', this)">A1</button>
-      <button class="slot-btn" onclick="selectSlot('A2', this)">A2</button>
-      <button class="slot-btn" onclick="selectSlot('A3', this)">A3</button>
-      <button class="slot-btn" onclick="selectSlot('A4', this)">A4</button>
-      <button class="slot-btn" onclick="selectSlot('A5', this)">A5</button>
-      <button class="slot-btn" onclick="selectSlot('A6', this)">A6</button>
-      <button class="slot-btn" onclick="selectSlot('A7', this)">A7</button>
-      <button class="slot-btn" onclick="selectSlot('A8', this)">A8</button>
+      <button type="button" class="slot-btn" onclick="selectSlot('A1', this)">A1</button>
+      <button type="button" class="slot-btn" onclick="selectSlot('A2', this)">A2</button>
+      <button type="button" class="slot-btn" onclick="selectSlot('A3', this)">A3</button>
+      <button type="button" class="slot-btn" onclick="selectSlot('A4', this)">A4</button>
+      <button type="button" class="slot-btn" onclick="selectSlot('A5', this)">A5</button>
+      <button type="button" class="slot-btn" onclick="selectSlot('A6', this)">A6</button>
+      <button type="button" class="slot-btn" onclick="selectSlot('A7', this)">A7</button>
+      <button type="button" class="slot-btn" onclick="selectSlot('A8', this)">A8</button>
     </div>
 
     <div class="zone-header">โซน B - รถตู้/กระบะ</div>
     <div class="slots-grid">
-      <button class="slot-btn" onclick="selectSlot('B1', this)">B1</button>
-      <button class="slot-btn" onclick="selectSlot('B2', this)">B2</button>
-      <button class="slot-btn" onclick="selectSlot('B3', this)">B3</button>
-      <button class="slot-btn" onclick="selectSlot('B4', this)">B4</button>
-      <button class="slot-btn" onclick="selectSlot('B5', this)">B5</button>
-      <button class="slot-btn" onclick="selectSlot('B6', this)">B6</button>
-      <button class="slot-btn" onclick="selectSlot('B7', this)">B7</button>
-      <button class="slot-btn" onclick="selectSlot('B8', this)">B8</button>
+      <button type="button" class="slot-btn" onclick="selectSlot('B1', this)">B1</button>
+      <button type="button" class="slot-btn" onclick="selectSlot('B2', this)">B2</button>
+      <button type="button" class="slot-btn" onclick="selectSlot('B3', this)">B3</button>
+      <button type="button" class="slot-btn" onclick="selectSlot('B4', this)">B4</button>
+      <button type="button" class="slot-btn" onclick="selectSlot('B5', this)">B5</button>
+      <button type="button" class="slot-btn" onclick="selectSlot('B6', this)">B6</button>
+      <button type="button" class="slot-btn" onclick="selectSlot('B7', this)">B7</button>
+      <button type="button" class="slot-btn" onclick="selectSlot('B8', this)">B8</button>
     </div>
 
     <!-- Section 3 -->
@@ -219,7 +229,7 @@
         <input type="text" id="f_remark" placeholder="ขนาดรถ, เงื่อนไขพิเศษ">
       </div>
 
-      <button type="submit" class="btn-submit">ยืนยันการจอง</button>
+      <button type="submit" class="btn-submit">ยืนยันการจองคิว</button>
     </form>
 
     <!-- Section 4 -->
@@ -317,6 +327,28 @@
   </div>
 </div>
 
+<!-- POPUP MODAL: QR CODE GATE PASS -->
+<div id="qrModal" class="modal-overlay hidden">
+  <div class="modal-card">
+    <span class="pass-badge">✓ จองคิวสำเร็จ (Gate Pass)</span>
+    <h2 style="margin: 6px 0; font-size: 1.3rem; color: #0f172a;" id="passQueueNo">Q-8492</h2>
+    <p style="font-size: 0.82rem; color: #64748b; margin: 0 0 12px;">แคปหน้าจอนี้ไว้สำหรับแสดงกับ รปภ./เจ้าหน้าที่คลัง</p>
+    
+    <div class="qr-box">
+      <img id="qrImg" src="" alt="QR Code Gate Pass">
+    </div>
+
+    <div class="pass-info">
+      <div><strong>ทะเบียนรถ:</strong> <span id="passPlate">-</span></div>
+      <div><strong>ช่องจอด Dock:</strong> <span id="passSlot" style="color:#2563eb; font-weight:700;">-</span></div>
+      <div><strong>วันที่-เวลา:</strong> <span id="passDateTime">-</span></div>
+      <div><strong>ผู้จอง:</strong> <span id="passDriver">-</span></div>
+    </div>
+
+    <button type="button" class="btn-close-modal" onclick="closeQrModal()">ตกลง / ปิดหน้าต่าง</button>
+  </div>
+</div>
+
 <script>
   let selectedSlotName = '';
 
@@ -338,10 +370,37 @@
       alert('กรุณาคลิกเลือกช่อง Dock / ที่จอด ในข้อ 2 ก่อนครับ');
       return;
     }
-    alert('บันทึกการจองคิวสำเร็จแล้ว!');
+
+    const date = document.getElementById('f_date').value;
+    const start = document.getElementById('f_start').value;
+    const end = document.getElementById('f_end').value;
+    const plate = document.getElementById('f_plate').value.trim();
+    const driver = document.getElementById('f_driver').value.trim();
+
+    // Generate Queue ID
+    const queueNo = 'Q-' + Math.floor(1000 + Math.random() * 9000);
+    
+    // Create QR Code URL using QRServer API
+    const qrText = `PASS|${queueNo}|PLATE:${plate}|SLOT:${selectedSlotName}|DATE:${date}`;
+    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(qrText)}`;
+
+    // Set Data to Modal
+    document.getElementById('passQueueNo').innerText = queueNo;
+    document.getElementById('qrImg').src = qrUrl;
+    document.getElementById('passPlate').innerText = plate;
+    document.getElementById('passSlot').innerText = `ช่อง ${selectedSlotName}`;
+    document.getElementById('passDateTime').innerText = `${date} (${start} - ${end})`;
+    document.getElementById('passDriver').innerText = driver;
+
+    // Show Modal
+    document.getElementById('qrModal').classList.remove('hidden');
   }
 
-  // Render Table Rows
+  function closeQrModal() {
+    document.getElementById('qrModal').classList.add('hidden');
+  }
+
+  // Render Schedule Table Rows
   const slots = ['A1','A2','A3','A4','A5','A6','A7','A8','B1','B2','B3','B4','B5','B6','B7','B8'];
   const tbody = document.getElementById('scheduleRows');
   let html = '';
