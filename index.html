@@ -15,72 +15,45 @@
     --zoneA:#2f5fe0; --zoneA-bg:#e8edfd; --zoneB:#8b3ce0; --zoneB-bg:#f2e8fd; --zoneC:#e07a1f; --zoneC-bg:#fdf0e2;
     --grad:linear-gradient(135deg,#2f5fe0,#8b3ce0);
     --shadow:0 1px 2px rgba(20,25,40,.04), 0 6px 20px rgba(20,25,40,.06);
-    box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+    box-sizing:border-box;
   }
-  @media (prefers-color-scheme: dark){
-    :root:not([data-theme="light"]){
-      --bg:#0d0f16; --card:#161a24; --text:#eef0f6; --muted:#9198ab;
-      --primary:#6d8dff; --primary-d:#4a68d6; --primary-soft:#1c2440;
-      --ok-bg:#0f2a1c; --bad-bg:#331319; --warn-bg:#332405;
-      --zoneA:#7c9bff; --zoneA-bg:#1c2440; --zoneB:#c398ff; --zoneB-bg:#2a1d40; --zoneC:#ffb066; --zoneC-bg:#3a2712;
-      --shadow:0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
-    }
-  }
-  :root[data-theme="dark"]{
-    --bg:#0d0f16; --card:#161a24; --text:#eef0f6; --muted:#9198ab;
-    --primary:#6d8dff; --primary-d:#4a68d6; --primary-soft:#1c2440;
-    --ok-bg:#0f2a1c; --bad-bg:#331319; --warn-bg:#332405;
-    --zoneA:#7c9bff; --zoneA-bg:#1c2440; --zoneB:#c398ff; --zoneB-bg:#2a1d40; --zoneC:#ffb066; --zoneC-bg:#3a2712;
-    --shadow:0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
-  }
-  html{scroll-padding-top:calc(70px + env(safe-area-inset-top,0px));}
   *{box-sizing:border-box;}
-  body{margin:0;background:var(--bg);color:var(--text);font-family:"Inter","Noto Sans Thai",-apple-system,Segoe UI,Roboto,sans-serif;line-height:1.55;-webkit-font-smoothing:antialiased;}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:"Inter","Noto Sans Thai",sans-serif;line-height:1.55;}
   .wrap{max-width:1000px;margin:0 auto;padding:22px 16px 70px;}
-  h1{font-size:1.32rem;font-weight:800;margin:0 0 4px;letter-spacing:-.01em;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;display:inline-block;}
-  .sub{color:var(--muted);margin:0 0 18px;font-size:.87rem;max-width:640px;}
-  .tabs{display:flex;gap:6px;margin-bottom:20px;position:sticky;top:env(safe-area-inset-top,0px);background:var(--bg);padding:8px 0;z-index:5;border-radius:14px;}
-  .tab-btn{flex:1;padding:11px;border-radius:12px;border:none;background:var(--card);color:var(--muted);font-size:.85rem;font-weight:600;cursor:pointer;box-shadow:var(--shadow);transition:.15s;}
-  .tab-btn.active{background:var(--grad);color:#fff;box-shadow:0 4px 14px rgba(139,60,224,.35);}
+  h1{font-size:1.32rem;font-weight:800;margin:0 0 4px;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;display:inline-block;}
+  .sub{color:var(--muted);margin:0 0 18px;font-size:.87rem;}
+  .tabs{display:flex;gap:6px;margin-bottom:20px;background:var(--bg);padding:8px 0;position:sticky;top:0;z-index:5;}
+  .tab-btn{flex:1;padding:11px;border-radius:12px;border:none;background:var(--card);color:var(--muted);font-size:.85rem;font-weight:600;cursor:pointer;box-shadow:var(--shadow);}
+  .tab-btn.active{background:var(--grad);color:#fff;}
   .card{background:var(--card);border-radius:18px;padding:20px;margin-bottom:16px;box-shadow:var(--shadow);}
-  .card h2{font-size:1rem;font-weight:700;margin:0 0 14px;display:flex;align-items:center;gap:8px;}
+  .card h2{font-size:1rem;font-weight:700;margin:0 0 14px;}
   .grid2{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
   @media (max-width:560px){.grid2{grid-template-columns:1fr;}}
-  label{display:block;font-size:.78rem;color:var(--muted);margin-bottom:5px;font-weight:500;}
-  input,select,textarea{width:100%;padding:10px 12px;border:1.5px solid transparent;border-radius:10px;background:var(--bg);color:var(--text);font-size:.9rem;font-family:inherit;transition:.15s;}
-  input:focus,select:focus,textarea:focus{outline:none;border-color:var(--primary);background:var(--card);}
-  textarea{resize:vertical;min-height:52px;}
+  label{display:block;font-size:.78rem;color:var(--muted);margin-bottom:5px;}
+  input,select,textarea{width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:10px;background:var(--bg);color:var(--text);font-size:.9rem;}
   .field{margin-bottom:12px;}
-  button{font-family:inherit;}
-  button.primary{background:var(--grad);color:#fff;border:none;border-radius:12px;padding:12px 18px;font-size:.94rem;font-weight:700;cursor:pointer;width:100%;transition:.15s;}
-  button.primary:hover:not(:disabled){filter:brightness(1.08);}
-  button.primary:disabled{opacity:.4;cursor:not-allowed;}
+  button.primary{background:var(--grad);color:#fff;border:none;border-radius:12px;padding:12px 18px;font-size:.94rem;font-weight:700;cursor:pointer;width:100%;}
   button.ghost{background:transparent;color:var(--bad);border:1.5px solid var(--bad-bg);border-radius:9px;padding:7px 12px;font-size:.76rem;cursor:pointer;font-weight:600;}
   button.step{background:var(--primary-soft);color:var(--primary-d);border:none;border-radius:9px;padding:7px 12px;font-size:.76rem;cursor:pointer;font-weight:700;}
   .msg{font-size:.84rem;margin-top:10px;font-weight:600;}
   .msg.ok{color:var(--ok);} .msg.bad{color:var(--bad);}
-  .legend{display:flex;gap:16px;flex-wrap:wrap;font-size:.78rem;color:var(--muted);margin-bottom:14px;}
+  .legend{display:flex;gap:16px;font-size:.78rem;color:var(--muted);margin-bottom:14px;}
   .legend span{display:inline-flex;align-items:center;gap:6px;}
   .dot{width:12px;height:12px;border-radius:4px;display:inline-block;}
   .dot.free{background:var(--ok-bg);border:1.5px solid var(--ok);}
   .dot.taken{background:var(--bad-bg);border:1.5px solid var(--bad);}
   .dot.sel{background:var(--primary);}
-  .zone-title{font-size:.8rem;font-weight:700;margin:16px 0 8px;color:var(--muted);text-transform:uppercase;letter-spacing:.03em;padding-left:10px;border-left:4px solid var(--zoneA);}
-  .zone-title[data-zone="B"]{border-left-color:var(--zoneB);}
-  .zone-title[data-zone="C"]{border-left-color:var(--zoneC);}
-  .zone-title:first-child{margin-top:0;}
+  .zone-title{font-size:.8rem;font-weight:700;margin:16px 0 8px;color:var(--muted);padding-left:10px;border-left:4px solid var(--zoneA);}
   .slots{display:grid;grid-template-columns:repeat(auto-fill,minmax(58px,1fr));gap:8px;}
-  .slot{aspect-ratio:1/1;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;cursor:pointer;background:var(--ok-bg);color:var(--ok);user-select:none;transition:.12s;}
-  .slot:hover{transform:translateY(-1px);}
-  .slot.taken{background:var(--bad-bg);color:var(--bad);cursor:not-allowed;opacity:.7;}
-  .slot.selected{background:var(--primary);color:#fff;box-shadow:0 4px 12px rgba(47,95,224,.4);}
+  .slot{aspect-ratio:1/1;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;cursor:pointer;background:var(--ok-bg);color:var(--ok);}
+  .slot.selected{background:var(--primary);color:#fff;}
   .picked-bar{display:flex;align-items:center;justify-content:space-between;background:var(--primary-soft);border-radius:12px;padding:11px 14px;margin-top:14px;font-size:.88rem;color:var(--primary-d);font-weight:600;}
   .booking{border-radius:14px;padding:14px 16px;margin-bottom:10px;background:var(--bg);font-size:.84rem;}
-  .booking-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap;}
+  .booking-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;}
   .plate{font-weight:700;font-size:.92rem;}
   .queue-no{color:var(--muted);font-weight:600;font-size:.75rem;margin-right:6px;}
   .slotbadge{display:inline-block;font-size:.7rem;background:var(--grad);color:#fff;border-radius:6px;padding:2px 8px;margin-left:6px;font-weight:700;}
-  .status{font-size:.7rem;padding:3px 10px;border-radius:20px;font-weight:700;white-space:nowrap;}
+  .status{font-size:.7rem;padding:3px 10px;border-radius:20px;font-weight:700;}
   .status.s-wait{background:var(--warn-bg);color:var(--warn);}
   .status.s-load{background:var(--zoneC-bg);color:var(--zoneC);}
   .status.s-done{background:var(--ok-bg);color:var(--ok);}
@@ -89,18 +62,12 @@
   .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
   .empty{color:var(--muted);font-size:.88rem;text-align:center;padding:20px 0;}
   .badge{font-size:.72rem;color:var(--muted);}
-  .hidden{display:none !important;}
-  #qrcodeModal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;z-index:100;padding:16px;}
   .modal-card{background:var(--card);padding:24px;border-radius:20px;max-width:380px;width:100%;text-align:center;box-shadow:var(--shadow);}
   #qrcodeCanvas{display:flex;flex-direction:column;align-items:center;gap:12px;margin:16px 0;}
-  #qrcodeCanvas img{border-radius:12px;box-shadow:var(--shadow);margin:0 auto;}
+  #qrcodeCanvas img{border-radius:12px;margin:0 auto;}
   .qrinfo{background:var(--bg);border-radius:12px;padding:12px 14px;font-size:.82rem;text-align:left;margin:12px 0;line-height:1.8;}
   .kpi{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:2px;}
   .kpi div{flex:1;min-width:100px;background:var(--bg);border-radius:14px;padding:12px;text-align:center;}
-  .kpi div.k-total{background:var(--zoneA-bg);} .kpi div.k-total .num{color:var(--zoneA);}
-  .kpi div.k-wait{background:var(--warn-bg);} .kpi div.k-wait .num{color:var(--warn);}
-  .kpi div.k-load{background:var(--zoneC-bg);} .kpi div.k-load .num{color:var(--zoneC);}
-  .kpi div.k-done{background:var(--ok-bg);} .kpi div.k-done .num{color:var(--ok);}
   .kpi .num{font-size:1.4rem;font-weight:800;}
   .kpi .lbl{font-size:.72rem;color:var(--muted);margin-top:2px;}
   .filterbar{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;margin-bottom:14px;}
@@ -118,7 +85,7 @@
   </div>
 
   <!-- ===== DRIVER TAB ===== -->
-  <div id="tab-driver">
+  <div id="tab-driver" style="display: block;">
     <div class="card">
       <h2>1️⃣ เลือกวันและเวลาที่ต้องการจอง</h2>
       <div class="grid2">
@@ -132,11 +99,10 @@
       <h2>2️⃣ เลือกช่อง Dock / ที่จอด</h2>
       <div class="legend">
         <span><i class="dot free"></i> ว่าง</span>
-        <span><i class="dot taken"></i> ไม่ว่าง</span>
         <span><i class="dot sel"></i> เลือกอยู่</span>
       </div>
 
-      <div class="zone-title" data-zone="A">โซน A - สินค้าแห้ง / อุปโภคบริโภค</div>
+      <div class="zone-title">โซน A - สินค้าแห้ง / อุปโภคบริโภค</div>
       <div class="slots">
         <div class="slot" onclick="selectSlot('A1')">A1</div>
         <div class="slot" onclick="selectSlot('A2')">A2</div>
@@ -144,7 +110,7 @@
         <div class="slot" onclick="selectSlot('A4')">A4</div>
       </div>
 
-      <div class="zone-title" data-zone="B">โซน B - สินค้าความเย็น / อาหารสด</div>
+      <div class="zone-title">โซน B - สินค้าความเย็น / อาหารสด</div>
       <div class="slots">
         <div class="slot" onclick="selectSlot('B1')">B1</div>
         <div class="slot" onclick="selectSlot('B2')">B2</div>
@@ -152,7 +118,7 @@
         <div class="slot" onclick="selectSlot('B4')">B4</div>
       </div>
 
-      <div class="zone-title" data-zone="C">โซน C - วัตถุดิบขนาดใหญ่ / สินค้าอันตราย</div>
+      <div class="zone-title">โซน C - วัตถุดิบขนาดใหญ่ / สินค้าอันตราย</div>
       <div class="slots">
         <div class="slot" onclick="selectSlot('C1')">C1</div>
         <div class="slot" onclick="selectSlot('C2')">C2</div>
@@ -190,14 +156,14 @@
   </div>
 
   <!-- ===== MANAGER TAB ===== -->
-  <div id="tab-manager" class="hidden">
+  <div id="tab-manager" style="display: none;">
     <div class="card">
       <h2>📊 สรุปสถานะคิววันนี้</h2>
       <div class="kpi">
-        <div class="k-total"><div class="num" id="kpiTotal">0</div><div class="lbl">คิวทั้งหมด</div></div>
-        <div class="k-wait"><div class="num" id="kpiWait">0</div><div class="lbl">รอเรียกคิว</div></div>
-        <div class="k-load"><div class="num" id="kpiLoad">0</div><div class="lbl">กำลังโหลดสินค้า</div></div>
-        <div class="k-done"><div class="num" id="kpiDone">0</div><div class="lbl">เสร็จสิ้น</div></div>
+        <div><div class="num" id="kpiTotal" style="color:var(--primary)">0</div><div class="lbl">คิวทั้งหมด</div></div>
+        <div><div class="num" id="kpiWait" style="color:var(--warn)">0</div><div class="lbl">รอเรียกคิว</div></div>
+        <div><div class="num" id="kpiLoad" style="color:var(--zoneC)">0</div><div class="lbl">กำลังโหลดสินค้า</div></div>
+        <div><div class="num" id="kpiDone" style="color:var(--ok)">0</div><div class="lbl">เสร็จสิ้น</div></div>
       </div>
     </div>
 
@@ -222,8 +188,8 @@
   </div>
 </div>
 
-<!-- QR CODE MODAL -->
-<div id="qrcodeModal" class="hidden">
+<!-- QR CODE MODAL (ใช้ Inline Style ซ่อนไว้ตั้งแต่เริ่ม) -->
+<div id="qrcodeModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.65); z-index: 9999; align-items: center; justify-content: center; padding: 16px;">
   <div class="modal-card">
     <h3 style="margin:0 0 8px;font-size:1.1rem;">🎫 QR Gate Pass</h3>
     <p class="badge" style="margin-bottom:12px;">แสดง QR Code นี้แก่เจ้าหน้าที่หน้าประตูทางเข้าคลัง</p>
@@ -236,7 +202,7 @@
 <!-- FIREBASE & APP LOGIC -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-  import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+  import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyDvVELT3wzRkozn1XnViVajQEBhwvzzXs",
@@ -264,8 +230,8 @@
 
   window.switchTab = function(tab) {
     const isDriver = tab === 'driver';
-    document.getElementById("tab-driver").classList.toggle("hidden", !isDriver);
-    document.getElementById("tab-manager").classList.toggle("hidden", isDriver);
+    document.getElementById("tab-driver").style.display = isDriver ? "block" : "none";
+    document.getElementById("tab-manager").style.display = isDriver ? "none" : "block";
     document.getElementById("tabBtnDriver").classList.toggle("active", isDriver);
     document.getElementById("tabBtnManager").classList.toggle("active", !isDriver);
   };
@@ -340,11 +306,16 @@
 
   function initRealtimeListener() {
     if (!db) return;
-    const q = query(collection(db, "queues"), orderBy("createdAt", "desc"));
-    onSnapshot(q, (snapshot) => {
-      queues = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      renderViews();
-    });
+    try {
+      const colRef = collection(db, "queues");
+      onSnapshot(colRef, (snapshot) => {
+        queues = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        queues.sort((a, b) => (b.createdAt || "").localeCompare(a.createdAt || ""));
+        renderViews();
+      });
+    } catch(e) {
+      console.error("Firestore listener failed:", e);
+    }
   }
 
   function renderViews() {
@@ -445,11 +416,11 @@
       <strong>ช่องจอด:</strong> ${slot}<br>
       <strong>นัดหมาย:</strong> ${date} เวลา ${time} น.
     `;
-    document.getElementById("qrcodeModal").classList.remove("hidden");
+    document.getElementById("qrcodeModal").style.display = "flex";
   };
 
   window.closeQRModal = function() {
-    document.getElementById("qrcodeModal").classList.add("hidden");
+    document.getElementById("qrcodeModal").style.display = "none";
   };
 
   function getStatusClass(status) {
