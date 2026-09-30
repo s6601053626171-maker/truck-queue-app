@@ -6,157 +6,99 @@
 <title>ระบบจองคิวรถบรรทุก & จัดการคลังสินค้า</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<style>
-  :root {
-    --primary: #4f46e5;
-    --primary-hover: #4338ca;
-    --bg-color: #f3f4f6;
-    --card-bg: #ffffff;
-    --text-color: #1f2937;
-    --muted-color: #6b7280;
-    --border-color: #e5e7eb;
-  }
 
+<!-- Firebase Firestore SDKs (Compat Build) -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+<style>
+  :root { --primary: #4f46e5; --bg-color: #f3f4f6; --card-bg: #ffffff; --text-color: #1f2937; --border-color: #e5e7eb; }
   * { box-sizing: border-box; font-family: 'Noto Sans Thai', sans-serif; }
   body { margin: 0; background-color: #eef2f6; padding: 24px 16px; color: var(--text-color); }
   .container { max-width: 1040px; margin: 0 auto; background: var(--card-bg); border-radius: 18px; padding: 28px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
-
-  /* Title & Subtitle */
   .app-header { margin-bottom: 20px; }
   .app-title-box { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
   .title-icon { width: 18px; height: 18px; background: var(--primary); border-radius: 4px; display: inline-block; }
   .app-title { font-size: 1.35rem; font-weight: 700; color: #111827; margin: 0; }
   .app-subtitle { font-size: 0.88rem; color: #6b7280; margin: 0; line-height: 1.5; }
-
-  /* Navigation Tabs */
   .tabs-nav { display: flex; gap: 10px; background: #f1f5f9; padding: 6px; border-radius: 12px; margin-bottom: 24px; }
   .tab-btn { flex: 1; padding: 12px 16px; border: none; border-radius: 9px; font-weight: 700; cursor: pointer; font-size: 0.95rem; background: transparent; color: #64748b; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
   .tab-btn.active { background: #4f46e5; color: #ffffff; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25); }
-
-  /* Badge Titles */
   .sec-title { font-size: 1.05rem; font-weight: 700; margin: 24px 0 14px; display: flex; align-items: center; gap: 10px; color: #111827; }
   .num-badge { background: #3b82f6; color: white; border-radius: 6px; width: 24px; height: 24px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.88rem; font-weight: 700; flex-shrink: 0; }
-
-  /* Forms & Fields */
   .field-group { display: flex; flex-direction: column; }
   label { font-size: 0.86rem; color: #374151; margin-bottom: 6px; font-weight: 600; }
-  input, select, textarea { padding: 10px 14px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 0.92rem; background: #fff; outline: none; transition: 0.2s; width: 100%; }
-  input:focus, select:focus, textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15); }
-  .help-note { font-size: 0.8rem; color: #6b7280; margin-top: 8px; }
-
+  input, select { padding: 10px 14px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 0.92rem; background: #fff; outline: none; width: 100%; }
+  input:focus, select:focus { border-color: var(--primary); }
   .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
   @media (max-width: 768px) { .grid-3 { grid-template-columns: 1fr; } }
-
-  /* Dock Slots Section */
   .legend { display: flex; gap: 18px; font-size: 0.85rem; color: #6b7280; margin-bottom: 16px; align-items: center; }
   .legend-item { display: flex; align-items: center; gap: 6px; }
   .dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
   .dot.free { background: #e2e8f0; border: 1px solid #cbd5e1; }
   .dot.taken { background: #94a3b8; }
   .dot.selected { background: #3b82f6; }
-
   .zone-header { font-size: 0.88rem; font-weight: 700; color: #475569; margin: 16px 0 10px; padding-left: 8px; border-left: 3px solid var(--primary); }
   .slots-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); gap: 10px; }
-  .slot-btn { padding: 12px 0; border-radius: 8px; border: 1px solid #cbd5e1; font-weight: 700; font-size: 0.9rem; cursor: pointer; text-align: center; background: #e2e8f0; color: #475569; transition: all 0.15s ease; }
-  .slot-btn:hover:not(.taken) { background: #cbd5e1; }
-  .slot-btn.taken { background: #94a3b8; color: #ffffff; cursor: not-allowed; border-color: #64748b; opacity: 0.7; }
-  .slot-btn.selected { background: #3b82f6; color: #ffffff; border-color: #2563eb; box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3); }
-
-  .btn-submit { width: 100%; background: #4f46e5; color: white; border: none; padding: 14px; border-radius: 10px; font-size: 1rem; font-weight: 700; cursor: pointer; margin-top: 20px; transition: 0.2s; }
-  .btn-submit:hover { background: #4338ca; }
-
-  /* Section 4: Map & Route */
-  .map-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; margin-top: 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; }
-  .map-info p { margin: 4px 0; font-size: 0.88rem; color: #475569; }
-  .btn-maps { background: #3b82f6; color: white; border: none; padding: 10px 18px; border-radius: 8px; font-weight: 600; text-decoration: none; font-size: 0.88rem; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
-
-  /* TAB 2: STAFF DASHBOARD & STATS */
+  .slot-btn { padding: 12px 0; border-radius: 8px; border: 1px solid #cbd5e1; font-weight: 700; font-size: 0.9rem; cursor: pointer; text-align: center; background: #e2e8f0; color: #475569; }
+  .slot-btn.taken { background: #94a3b8; color: #ffffff; cursor: not-allowed; opacity: 0.7; }
+  .slot-btn.selected { background: #3b82f6; color: #ffffff; border-color: #2563eb; }
+  .btn-submit { width: 100%; background: #4f46e5; color: white; border: none; padding: 14px; border-radius: 10px; font-size: 1rem; font-weight: 700; cursor: pointer; margin-top: 20px; }
   .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 24px; }
   @media (max-width: 640px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
-  
   .stat-card { background: #f8fafc; border-radius: 12px; padding: 16px; text-align: center; border: 1px solid #e2e8f0; }
-  .stat-card.blue { background: #eff6ff; border-color: #bfdbfe; }
-  .stat-card.yellow { background: #fefce8; border-color: #fef08a; }
-  .stat-card.green { background: #f0fdf4; border-color: #bbf7d0; }
-  .stat-num { font-size: 1.8rem; font-weight: 800; color: #1e293b; line-height: 1.2; }
-  .stat-label { font-size: 0.82rem; color: #64748b; font-weight: 600; margin-top: 4px; }
-
-  /* Schedule Table */
+  .stat-num { font-size: 1.8rem; font-weight: 800; color: #1e293b; }
+  .stat-label { font-size: 0.82rem; color: #64748b; font-weight: 600; }
   .table-card { background: #fff; border-radius: 12px; border: 1px solid var(--border-color); padding: 20px; margin-top: 16px; }
   .schedule-wrapper { overflow-x: auto; border: 1px solid var(--border-color); border-radius: 8px; margin-top: 12px; }
   .schedule-table { width: 100%; border-collapse: collapse; min-width: 1000px; font-size: 0.82rem; text-align: center; }
   .schedule-table th, .schedule-table td { border: 1px solid #e5e7eb; padding: 8px 4px; }
-  .schedule-table th { background: #f8fafc; color: #475569; font-weight: 700; position: sticky; top: 0; }
-  .schedule-table th:first-child, .schedule-table td:first-child { position: sticky; left: 0; background: #f1f5f9; font-weight: 700; color: #1e293b; z-index: 2; width: 65px; }
-
-  /* Check-in Status Cards */
-  .queue-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; margin-top: 12px; transition: 0.2s; }
+  .schedule-table th { background: #f8fafc; color: #475569; }
+  .queue-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; margin-top: 12px; }
   .queue-card-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
   .queue-card-title { font-weight: 700; font-size: 1rem; color: #1e293b; }
   .queue-card-details { font-size: 0.85rem; color: #475569; line-height: 1.6; }
   .queue-actions { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
-  .btn-action { padding: 6px 14px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff; font-size: 0.8rem; font-weight: 600; cursor: pointer; transition: 0.15s; }
-  .btn-action:hover { background: #f1f5f9; }
-  .btn-action.cancel { color: #ef4444; border-color: #fca5a5; }
-  .btn-action.cancel:hover { background: #fef2f2; }
-
-  /* MODAL QR CODE GATE PASS */
-  .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 999; padding: 16px; }
-  .modal-card { background: #ffffff; border-radius: 20px; max-width: 400px; width: 100%; padding: 28px 24px; text-align: center; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); position: relative; animation: popIn 0.25s ease-out; }
-  @keyframes popIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-  .pass-badge { background: #dcfce7; color: #15803d; font-size: 0.82rem; font-weight: 700; padding: 4px 12px; border-radius: 20px; display: inline-block; margin-bottom: 8px; }
-  .qr-box { background: #ffffff; border: 2px dashed #cbd5e1; border-radius: 16px; padding: 16px; margin: 16px auto; display: inline-block; box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
-  .qr-box img { display: block; margin: 0 auto; width: 180px; height: 180px; }
-  .pass-info { background: #f8fafc; border-radius: 12px; padding: 14px; text-align: left; font-size: 0.88rem; color: #334155; margin-bottom: 20px; line-height: 1.6; }
-  .btn-close-modal { width: 100%; background: #3b82f6; color: white; border: none; padding: 12px; border-radius: 10px; font-weight: 700; font-size: 0.95rem; cursor: pointer; }
-
+  .btn-action { padding: 6px 14px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff; font-size: 0.8rem; font-weight: 600; cursor: pointer; }
+  .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.65); display: flex; align-items: center; justify-content: center; z-index: 999; padding: 16px; }
+  .modal-card { background: #ffffff; border-radius: 20px; max-width: 400px; width: 100%; padding: 28px 24px; text-align: center; }
+  .qr-box img { width: 180px; height: 180px; }
+  .loading-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.8); display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:1.2rem; z-index:1000; }
   .hidden { display: none !important; }
 </style>
 </head>
 <body>
 
+<div id="loading" class="loading-overlay">⏳ กำลังเชื่อมต่อ Cloud Firestore...</div>
+
 <div class="container">
-  <!-- Header Title -->
   <div class="app-header">
     <div class="app-title-box">
       <span class="title-icon"></span>
       <h1 class="app-title">ระบบจองคิวรถบรรทุก & จัดการคลังสินค้า</h1>
     </div>
-    <p class="app-subtitle">ฝั่งคนขับจองคิว รับ QR Gate Pass และดูเส้นทางไปคลัง — ฝั่งเจ้าหน้าที่คลังดูตารางคิวและอัปเดตสถานะแบบเรียลไทม์</p>
+    <p class="app-subtitle">⚡ เชื่อมต่อ Cloud Firestore เรียลไทม์</p>
   </div>
 
-  <!-- Navigation Tabs -->
   <div class="tabs-nav">
     <button class="tab-btn active" id="tabBtnDriver" onclick="switchTab('driver')">🚚 คนขับ / บริษัทขนส่ง</button>
     <button class="tab-btn" id="tabBtnStaff" onclick="switchTab('staff')">🏭 เจ้าหน้าที่คลังสินค้า</button>
   </div>
 
-  <!-- ==================== TAB 1: DRIVER FORM ==================== -->
+  <!-- TAB 1: DRIVER -->
   <div id="tabDriver">
-    <!-- Section 1 -->
     <div class="sec-title"><span class="num-badge">1</span> เลือกวันและเวลาที่ต้องการจอง</div>
     <div class="grid-3">
-      <div class="field-group">
-        <label>วันที่จอง *</label>
-        <input type="date" id="f_date" value="2026-09-30" onchange="updateSlotsAvailability()">
-      </div>
-      <div class="field-group">
-        <label>เวลาเริ่มจอด *</label>
-        <input type="time" id="f_start" value="17:00" onchange="updateSlotsAvailability()">
-      </div>
-      <div class="field-group">
-        <label>เวลาสิ้นสุด *</label>
-        <input type="time" id="f_end" value="21:00" onchange="updateSlotsAvailability()">
-      </div>
+      <div class="field-group"><label>วันที่จอง *</label><input type="date" id="f_date" value="2026-09-30" onchange="updateSlotsAvailability()"></div>
+      <div class="field-group"><label>เวลาเริ่มจอด *</label><input type="time" id="f_start" value="17:00" onchange="updateSlotsAvailability()"></div>
+      <div class="field-group"><label>เวลาสิ้นสุด *</label><input type="time" id="f_end" value="21:00" onchange="updateSlotsAvailability()"></div>
     </div>
-    <div class="help-note">เลือกให้ครบ 3 ช่อง ผังช่องจอดด้านล่างจะอัปเดตช่องที่ว่าง/ไม่ว่างตามช่วงเวลานี้</div>
 
-    <!-- Section 2 -->
     <div class="sec-title"><span class="num-badge">2</span> เลือกช่อง Dock / ที่จอด</div>
     <div class="legend">
       <span class="legend-item"><i class="dot free"></i> ว่าง</span>
-      <span class="legend-item"><i class="dot taken"></i> ไม่ว่าง / มีคนจองแล้ว</span>
-      <span class="legend-item"><i class="dot selected"></i> ช่องที่เลือก</span>
+      <span class="legend-item"><i class="dot taken"></i> ไม่ว่าง</span>
+      <span class="legend-item"><i class="dot selected"></i> เลือกอยู่</span>
     </div>
 
     <div class="zone-header">โซน A - รถบรรทุกใหญ่</div>
@@ -183,16 +125,11 @@
       <button type="button" class="slot-btn" data-slot="B8" onclick="selectSlot('B8', this)">B8</button>
     </div>
 
-    <!-- Section 3 -->
     <div class="sec-title"><span class="num-badge">3</span> รายละเอียดผู้จอง</div>
     <form onsubmit="event.preventDefault(); handleBooking();">
       <div class="grid-3" style="margin-bottom: 12px;">
-        <div class="field-group">
-          <label>ทะเบียนรถ *</label>
-          <input type="text" id="f_plate" placeholder="เช่น 70-1234 กรุงเทพฯ" required>
-        </div>
-        <div class="field-group">
-          <label>ประเภทรถ *</label>
+        <div class="field-group"><label>ทะเบียนรถ *</label><input type="text" id="f_plate" placeholder="เช่น 70-1234" required></div>
+        <div class="field-group"><label>ประเภทรถ *</label>
           <select id="f_truck_type" required>
             <option value="รถบรรทุก 6 ล้อ">รถบรรทุก 6 ล้อ</option>
             <option value="รถบรรทุก 10 ล้อ">รถบรรทุก 10 ล้อ</option>
@@ -200,154 +137,101 @@
             <option value="รถเทรลเลอร์">รถเทรลเลอร์</option>
           </select>
         </div>
-        <div class="field-group">
-          <label>ชื่อผู้ติดต่อ/ผู้จอง *</label>
-          <input type="text" id="f_driver" placeholder="ชื่อ-นามสกุล" required>
-        </div>
+        <div class="field-group"><label>ชื่อผู้ติดต่อ *</label><input type="text" id="f_driver" required></div>
       </div>
-
       <div class="grid-3">
-        <div class="field-group">
-          <label>เบอร์โทรติดต่อ *</label>
-          <input type="tel" id="f_phone" placeholder="08x-xxx-xxxx" required>
-        </div>
-        <div class="field-group">
-          <label>บริษัท/หน่วยงาน</label>
-          <input type="text" id="f_company" placeholder="ไม่บังคับ">
-        </div>
-        <div class="field-group">
-          <label>ประเภทสินค้า *</label>
-          <input type="text" id="f_product" placeholder="เช่น สินค้าเกษตร, พาเลท" required>
-        </div>
+        <div class="field-group"><label>เบอร์โทร *</label><input type="tel" id="f_phone" required></div>
+        <div class="field-group"><label>บริษัท</label><input type="text" id="f_company"></div>
+        <div class="field-group"><label>หมายเหตุ/สินค้า *</label><input type="text" id="f_remark" required></div>
       </div>
-
-      <div class="field-group" style="margin-top: 12px;">
-        <label>หมายเหตุ</label>
-        <input type="text" id="f_remark" placeholder="ขนาดรถ, เงื่อนไขพิเศษ">
-      </div>
-
-      <button type="submit" class="btn-submit">ยืนยันการจองคิว</button>
+      <button type="submit" class="btn-submit">ยืนยันการจองคิว (ส่งไปยัง Firestore)</button>
     </form>
-
-    <!-- Section 4 -->
-    <div class="sec-title">📍 แผนที่ & เส้นทางไปคลังสินค้า</div>
-    <div class="map-card">
-      <div class="map-info">
-        <p><strong>ที่ตั้งคลังสินค้า:</strong> มหาวิทยาลัยเทคโนโลยีพระจอมเกล้าพระนครเหนือ (มจพ.)</p>
-        <p><strong>ละติจูด:</strong> 13.819137 &nbsp;&nbsp; <strong>ลองจิจูด:</strong> 100.514288</p>
-        <p class="help-note" style="margin-top: 6px;">มีจุดพักรอคิวก่อนถึงประตูคลัง แนะนำให้คลิก "กำลังเดินทาง" เมื่อออกจากต้นทาง</p>
-      </div>
-      <a href="https://www.google.com/maps?q=13.819137,100.514288" target="_blank" class="btn-maps">📍 เปิดเส้นทางใน Google Maps</a>
-    </div>
   </div>
 
-  <!-- ==================== TAB 2: STAFF VIEW ==================== -->
+  <!-- TAB 2: STAFF -->
   <div id="tabStaff" class="hidden">
-    <!-- Queue Overview Stats -->
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
-      <div style="font-weight: 700; font-size: 1.05rem;">ภาพรวมคิว</div>
-      <div style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem;">
-        <label style="margin: 0;">วันที่ดูตาราง:</label>
-        <input type="date" id="staffViewDate" value="2026-09-30" style="width: auto; padding: 6px 10px;" onchange="renderScheduleTable()">
-      </div>
+      <div style="font-weight: 700;">ภาพรวมคิวในระบบ</div>
+      <input type="date" id="staffViewDate" value="2026-09-30" style="width: auto;" onchange="renderScheduleTable()">
     </div>
 
     <div class="stats-grid">
-      <div class="stat-card">
-        <div class="stat-num" id="statAll">0</div>
-        <div class="stat-label">คิวทั้งหมด</div>
-      </div>
-      <div class="stat-card blue">
-        <div class="stat-num" id="statWaiting" style="color: #2563eb;">0</div>
-        <div class="stat-label">รอ/กำลังเดินทาง</div>
-      </div>
-      <div class="stat-card yellow">
-        <div class="stat-num" id="statArrived" style="color: #ca8a04;">0</div>
-        <div class="stat-label">ถึงแล้ว/กำลังโหลด</div>
-      </div>
-      <div class="stat-card green">
-        <div class="stat-num" id="statDone" style="color: #16a34a;">0</div>
-        <div class="stat-label">เสร็จสิ้น</div>
-      </div>
+      <div class="stat-card"><div class="stat-num" id="statAll">0</div><div class="stat-label">คิวทั้งหมด</div></div>
+      <div class="stat-card"><div class="stat-num" id="statWaiting" style="color: #2563eb;">0</div><div class="stat-label">รอ/กำลังเดินทาง</div></div>
+      <div class="stat-card"><div class="stat-num" id="statArrived" style="color: #ca8a04;">0</div><div class="stat-label">ถึงแล้ว/กำลังโหลด</div></div>
+      <div class="stat-card"><div class="stat-num" id="statDone" style="color: #16a34a;">0</div><div class="stat-label">เสร็จสิ้น</div></div>
     </div>
 
-    <!-- Dock Schedule Table -->
     <div class="table-card">
-      <div style="font-weight: 700; font-size: 1.05rem; margin-bottom: 12px;">📊 ตารางคิว Dock Schedule</div>
-
+      <div style="font-weight: 700; margin-bottom: 12px;">📊 ตาราง Dock Schedule</div>
       <div class="schedule-wrapper">
         <table class="schedule-table">
           <thead>
             <tr>
-              <th>ช่อง</th>
-              <th>00:00</th><th>01:00</th><th>02:00</th><th>03:00</th><th>04:00</th><th>05:00</th>
+              <th>ช่อง</th><th>00:00</th><th>01:00</th><th>02:00</th><th>03:00</th><th>04:00</th><th>05:00</th>
               <th>06:00</th><th>07:00</th><th>08:00</th><th>09:00</th><th>10:00</th><th>11:00</th>
               <th>12:00</th><th>13:00</th><th>14:00</th><th>15:00</th><th>16:00</th><th>17:00</th>
               <th>18:00</th><th>19:00</th><th>20:00</th><th>21:00</th><th>22:00</th><th>23:00</th>
             </tr>
           </thead>
-          <tbody id="scheduleRows">
-            <!-- Rows dynamically created by JS -->
-          </tbody>
+          <tbody id="scheduleRows"></tbody>
         </table>
       </div>
     </div>
 
-    <!-- Status Management Section -->
     <div style="margin-top: 28px;">
-      <div style="font-weight: 700; font-size: 1.05rem; margin-bottom: 12px;">✅ Check-in & จัดการสถานะ (เรียงตามลำดับที่จองเข้ามา)</div>
-      
-      <div id="queueListContainer">
-        <!-- Queue Cards dynamically created by JS -->
-      </div>
+      <div style="font-weight: 700; margin-bottom: 12px;">✅ รายการ Check-in</div>
+      <div id="queueListContainer"></div>
     </div>
   </div>
 </div>
 
-<!-- POPUP MODAL: QR CODE GATE PASS -->
+<!-- QR MODAL -->
 <div id="qrModal" class="modal-overlay hidden">
   <div class="modal-card">
-    <span class="pass-badge">✓ จองคิวสำเร็จ (Gate Pass)</span>
-    <h2 style="margin: 6px 0; font-size: 1.3rem; color: #0f172a;" id="passQueueNo">Q-1001</h2>
-    <p style="font-size: 0.82rem; color: #64748b; margin: 0 0 12px;">แคปหน้าจอนี้ไว้สำหรับแสดงกับ รปภ./เจ้าหน้าที่คลัง</p>
-    
-    <div class="qr-box">
-      <img id="qrImg" src="" alt="QR Code Gate Pass">
-    </div>
-
-    <div class="pass-info">
-      <div><strong>ทะเบียนรถ:</strong> <span id="passPlate">-</span></div>
-      <div><strong>ช่องจอด Dock:</strong> <span id="passSlot" style="color:#2563eb; font-weight:700;">-</span></div>
-      <div><strong>วันที่-เวลา:</strong> <span id="passDateTime">-</span></div>
-      <div><strong>ผู้จอง:</strong> <span id="passDriver">-</span></div>
-    </div>
-
-    <button type="button" class="btn-close-modal" onclick="closeQrModal()">ตกลง / ปิดหน้าต่าง</button>
+    <h2 style="margin: 0;" id="passQueueNo">Q-1001</h2>
+    <div class="qr-box" style="margin: 15px 0;"><img id="qrImg" src="" alt="QR Pass"></div>
+    <p id="passInfoText" style="font-size:0.88rem; color:#475569;"></p>
+    <button type="button" class="btn-submit" onclick="closeQrModal()">ตกลง</button>
   </div>
 </div>
 
 <script>
-  let selectedSlotName = '';
+  // Firebase configuration
+  const firebaseConfig = {
+    apiKey: "AIzaSyDVeLVEl3wzRkozn1XmViVajOEBhaVZ2Xs",
+    authDomain: "truck-queue-app.firebaseapp.com",
+    projectId: "truck-queue-app",
+    storageBucket: "truck-queue-app.firebasestorage.app",
+    messagingSenderId: "724204821916",
+    appId: "1:724204821916:web:c0ed4049058427833cbc59",
+    measurementId: "G-GWRP2Q1MX4"
+  };
 
-  // Store all bookings centrally
-  let bookings = [
-    {
-      id: 1,
-      queueNo: 'Q-8492',
-      date: '2026-09-30',
-      start: '17:00',
-      end: '21:00',
-      slot: 'B4',
-      plate: 'ก1234',
-      truckType: 'รถบรรทุก 6 ล้อ',
-      driver: 'สรัญรัตน์ สุตา',
-      phone: '0616758087',
-      company: 'ขนส่งไทย',
-      product: 'พาเลท',
-      remark: '-',
-      status: 'waiting' // 'waiting', 'arrived', 'done', 'cancelled'
-    }
-  ];
+  // Initialize Firebase & Firestore
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+
+  let selectedSlotName = '';
+  let bookings = [];
+
+  // Realtime Listener ดึงข้อมูลจากคอลเลกชัน 'queues'
+  db.collection('queues').onSnapshot((snapshot) => {
+    bookings = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+    updateAllViews();
+    showLoading(false);
+  }, (error) => {
+    console.error("Firestore Error: ", error);
+    alert("ไม่สามารถเชื่อมต่อ Cloud Firestore ได้: " + error.message);
+    showLoading(false);
+  });
+
+  function showLoading(show) {
+    document.getElementById('loading').classList.toggle('hidden', !show);
+  }
 
   function switchTab(tab) {
     document.getElementById('tabDriver').classList.toggle('hidden', tab !== 'driver');
@@ -365,16 +249,12 @@
 
   function timeToMinutes(tStr) {
     if (!tStr) return 0;
-    const [h, m] = tStr.split(':').map(Number);
-    return h * 60 + m;
+    const [h, m] = tStr.toString().split(':').map(Number);
+    return h * 60 + (m || 0);
   }
 
   function isTimeOverlap(s1, e1, s2, e2) {
-    const start1 = timeToMinutes(s1);
-    const end1 = timeToMinutes(e1);
-    const start2 = timeToMinutes(s2);
-    const end2 = timeToMinutes(e2);
-    return Math.max(start1, start2) < Math.min(end1, end2);
+    return Math.max(timeToMinutes(s1), timeToMinutes(s2)) < Math.min(timeToMinutes(e1), timeToMinutes(e2));
   }
 
   function updateSlotsAvailability() {
@@ -382,16 +262,13 @@
     const startTime = document.getElementById('f_start').value;
     const endTime = document.getElementById('f_end').value;
 
-    const slotButtons = document.querySelectorAll('.slot-btn');
-    slotButtons.forEach(btn => {
+    document.querySelectorAll('.slot-btn').forEach(btn => {
       const slotName = btn.getAttribute('data-slot');
-      
-      // Check if slot is already booked for selected date and overlapping time
       const isTaken = bookings.some(b => 
         b.status !== 'cancelled' &&
         b.date === selectedDate &&
         b.slot === slotName &&
-        isTimeOverlap(startTime, endTime, b.start, b.end)
+        isTimeOverlap(startTime, endTime, b.startTime, b.endTime)
       );
 
       if (isTaken) {
@@ -404,9 +281,9 @@
     });
   }
 
-  function handleBooking() {
+  async function handleBooking() {
     if (!selectedSlotName) {
-      alert('กรุณาคลิกเลือกช่อง Dock / ที่จอด ในข้อ 2 ก่อนครับ');
+      alert('กรุณาคลิกเลือกช่อง Dock ก่อนครับ');
       return;
     }
 
@@ -419,65 +296,53 @@
       return;
     }
 
-    const plate = document.getElementById('f_plate').value.trim();
-    const truckType = document.getElementById('f_truck_type').value;
-    const driver = document.getElementById('f_driver').value.trim();
-    const phone = document.getElementById('f_phone').value.trim();
-    const company = document.getElementById('f_company').value.trim();
-    const product = document.getElementById('f_product').value.trim();
-    const remark = document.getElementById('f_remark').value.trim();
-
     const queueNo = 'Q-' + Math.floor(1000 + Math.random() * 9000);
-
     const newBooking = {
-      id: Date.now(),
       queueNo: queueNo,
       date: date,
-      start: start,
-      end: end,
+      startTime: start,
+      endTime: end,
       slot: selectedSlotName,
-      plate: plate,
-      truckType: truckType,
-      driver: driver,
-      phone: phone,
-      company: company || '-',
-      product: product,
-      remark: remark || '-',
-      status: 'waiting'
+      plate: document.getElementById('f_plate').value.trim(),
+      truckType: document.getElementById('f_truck_type').value,
+      driver: document.getElementById('f_driver').value.trim(),
+      phone: document.getElementById('f_phone').value.trim(),
+      remark: document.getElementById('f_remark').value.trim() || '-',
+      status: 'waiting',
+      createdAt: new Date().toISOString()
     };
 
-    bookings.push(newBooking);
+    showLoading(true);
+    try {
+      await db.collection('queues').add(newBooking);
 
-    // Create QR Code Pass
-    const qrText = `PASS|${queueNo}|PLATE:${plate}|SLOT:${selectedSlotName}|DATE:${date}`;
-    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(qrText)}`;
+      const qrText = `PASS|${queueNo}|PLATE:${newBooking.plate}|SLOT:${selectedSlotName}`;
+      document.getElementById('passQueueNo').innerText = queueNo;
+      document.getElementById('qrImg').src = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(qrText)}`;
+      document.getElementById('passInfoText').innerText = `ทะเบียน: ${newBooking.plate} | ช่อง: ${selectedSlotName} | เวลา: ${start}-${end}`;
+      document.getElementById('qrModal').classList.remove('hidden');
 
-    document.getElementById('passQueueNo').innerText = queueNo;
-    document.getElementById('qrImg').src = qrUrl;
-    document.getElementById('passPlate').innerText = plate;
-    document.getElementById('passSlot').innerText = `ช่อง ${selectedSlotName}`;
-    document.getElementById('passDateTime').innerText = `${date} (${start} - ${end})`;
-    document.getElementById('passDriver').innerText = driver;
-
-    document.getElementById('qrModal').classList.remove('hidden');
-
-    // Reset Form selection
-    selectedSlotName = '';
-    document.querySelectorAll('.slot-btn').forEach(b => b.classList.remove('selected'));
-
-    // Synchronize and update views
-    updateAllViews();
+      selectedSlotName = '';
+      document.querySelectorAll('.slot-btn').forEach(b => b.classList.remove('selected'));
+    } catch (err) {
+      alert('บันทึกข้อมูลไม่สำเร็จ: ' + err.message);
+    } finally {
+      showLoading(false);
+    }
   }
 
   function closeQrModal() {
     document.getElementById('qrModal').classList.add('hidden');
   }
 
-  function changeStatus(id, newStatus) {
-    const b = bookings.find(item => item.id === id);
-    if (b) {
-      b.status = newStatus;
-      updateAllViews();
+  async function changeStatus(docId, newStatus) {
+    showLoading(true);
+    try {
+      await db.collection('queues').doc(docId).update({ status: newStatus });
+    } catch (err) {
+      alert('อัปเดตสถานะไม่สำเร็จ: ' + err.message);
+    } finally {
+      showLoading(false);
     }
   }
 
@@ -505,20 +370,14 @@
           b.status !== 'cancelled' &&
           b.slot === slot &&
           b.date === staffDate &&
-          isTimeOverlap(hStart, hEnd, b.start, b.end)
+          isTimeOverlap(hStart, hEnd, b.startTime, b.endTime)
         );
 
         if (booking) {
-          let bgColor = '#bfdbfe'; // waiting
-          let textColor = '#1e40af';
-          if (booking.status === 'arrived') {
-            bgColor = '#fef08a'; // arrived
-            textColor = '#854d0e';
-          } else if (booking.status === 'done') {
-            bgColor = '#bbf7d0'; // done
-            textColor = '#166534';
-          }
-          html += `<td style="background:${bgColor}; color:${textColor}; font-weight:bold; font-size:0.75rem;" title="${booking.plate} (${booking.start}-${booking.end})">${booking.plate}</td>`;
+          let bgColor = '#bfdbfe';
+          if (booking.status === 'arrived') bgColor = '#fef08a';
+          if (booking.status === 'done') bgColor = '#bbf7d0';
+          html += `<td style="background:${bgColor}; font-weight:bold;">${booking.plate}</td>`;
         } else {
           html += `<td style="color:#cbd5e1;">-</td>`;
         }
@@ -533,50 +392,33 @@
     const activeBookings = bookings.filter(b => b.status !== 'cancelled');
     
     if (activeBookings.length === 0) {
-      container.innerHTML = '<div style="text-align:center; padding:30px; color:#94a3b8; background:#f8fafc; border-radius:12px;">ยังไม่มีรายการจองคิว</div>';
+      container.innerHTML = '<div style="text-align:center; padding:20px; color:#94a3b8;">ยังไม่มีรายการจองคิว</div>';
       return;
     }
 
     let html = '';
     activeBookings.forEach((b, idx) => {
-      let statusBadge = '';
       let actionBtns = '';
-
       if (b.status === 'waiting') {
-        statusBadge = `<span style="font-size: 0.8rem; color: #2563eb; font-weight: 600;">รอ/กำลังเดินทาง</span>`;
-        actionBtns = `
-          <button class="btn-action" style="background:#eff6ff; color:#2563eb; border-color:#bfdbfe;" onclick="changeStatus(${b.id}, 'arrived')">📍 ถึงคลังแล้ว / เริ่มโหลด</button>
-          <button class="btn-action cancel" onclick="changeStatus(${b.id}, 'cancelled')">ยกเลิกการจอง</button>
-        `;
+        actionBtns = `<button class="btn-action" onclick="changeStatus('${b.id}', 'arrived')">📍 ถึงคลังแล้ว</button>
+                      <button class="btn-action" style="color:red" onclick="changeStatus('${b.id}', 'cancelled')">ยกเลิก</button>`;
       } else if (b.status === 'arrived') {
-        statusBadge = `<span style="font-size: 0.8rem; color: #ca8a04; font-weight: 600;">ถึงแล้ว/กำลังโหลด</span>`;
-        actionBtns = `
-          <button class="btn-action" style="background:#22c55e; color:#fff; border:none;" onclick="changeStatus(${b.id}, 'done')">✅ โหลดเสร็จเรียบร้อย</button>
-          <button class="btn-action cancel" onclick="changeStatus(${b.id}, 'cancelled')">ยกเลิกการจอง</button>
-        `;
-      } else if (b.status === 'done') {
-        statusBadge = `<span style="font-size: 0.8rem; color: #16a34a; font-weight: 600;">เสร็จสิ้น</span>`;
-        actionBtns = `<span style="font-size:0.8rem; color:#16a34a; font-weight:600;">✓ ดำเนินการเสร็จสิ้นแล้ว</span>`;
+        actionBtns = `<button class="btn-action" style="background:#22c55e; color:#fff;" onclick="changeStatus('${b.id}', 'done')">✅ โหลดเสร็จแล้ว</button>`;
+      } else {
+        actionBtns = `<span style="color:#16a34a; font-weight:600;">✓ เสร็จสิ้น</span>`;
       }
 
       html += `
         <div class="queue-card">
           <div class="queue-card-head">
-            <div class="queue-card-title">#${idx + 1} ${b.plate} <span style="font-size: 0.8rem; background: #e0e7ff; color: #3730a3; padding: 2px 8px; border-radius: 4px; margin-left: 6px;">ช่อง ${b.slot}</span> <span style="font-size:0.8rem; color:#64748b;">(${b.queueNo})</span></div>
-            ${statusBadge}
+            <div class="queue-card-title">#${idx + 1} ${b.plate} (ช่อง ${b.slot})</div>
+            <div>สถานะ: ${b.status}</div>
           </div>
-          <div class="queue-card-details">
-            📅 ${b.date} &nbsp;&nbsp; ⏰ ${b.start} - ${b.end}<br>
-            🚚 ${b.truckType} &nbsp;&nbsp; 👤 ${b.driver} &nbsp;&nbsp; 📞 ${b.phone}<br>
-            📦 สินค้า: ${b.product} ${b.company !== '-' ? '&nbsp;&nbsp; 🏢 ' + b.company : ''}
-          </div>
-          <div class="queue-actions">
-            ${actionBtns}
-          </div>
+          <div class="queue-card-details">📅 ${b.date} (${b.startTime} - ${b.endTime}) | 👤 ${b.driver} (${b.phone})</div>
+          <div class="queue-actions">${actionBtns}</div>
         </div>
       `;
     });
-
     container.innerHTML = html;
   }
 
@@ -586,10 +428,6 @@
     renderScheduleTable();
     renderQueueList();
   }
-
-  // Initial Load
-  updateAllViews();
 </script>
-
 </body>
 </html>
