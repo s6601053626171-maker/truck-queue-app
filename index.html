@@ -1,14 +1,442 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Truck Queue App</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ระบบจองคิวรถบรรทุก & จัดการคลังสินค้า</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+  :root{
+    --bg:#f4f6fa; --card:#ffffff; --text:#151824; --muted:#7a8194;
+    --primary:#2f5fe0; --primary-d:#1f43ad; --primary-soft:#e8edfd;
+    --ok:#0f9d58; --ok-bg:#e5f8ee; --bad:#e0384a; --bad-bg:#fdecee; --warn:#b5750a; --warn-bg:#fdf3df;
+    --zoneA:#2f5fe0; --zoneA-bg:#e8edfd; --zoneB:#8b3ce0; --zoneB-bg:#f2e8fd; --zoneC:#e07a1f; --zoneC-bg:#fdf0e2;
+    --grad:linear-gradient(135deg,#2f5fe0,#8b3ce0);
+    --shadow:0 1px 2px rgba(20,25,40,.04), 0 6px 20px rgba(20,25,40,.06);
+    box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0d0f16; --card:#161a24; --text:#eef0f6; --muted:#9198ab;
+      --primary:#6d8dff; --primary-d:#4a68d6; --primary-soft:#1c2440;
+      --ok-bg:#0f2a1c; --bad-bg:#331319; --warn-bg:#332405;
+      --zoneA:#7c9bff; --zoneA-bg:#1c2440; --zoneB:#c398ff; --zoneB-bg:#2a1d40; --zoneC:#ffb066; --zoneC-bg:#3a2712;
+      --shadow:0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0d0f16; --card:#161a24; --text:#eef0f6; --muted:#9198ab;
+    --primary:#6d8dff; --primary-d:#4a68d6; --primary-soft:#1c2440;
+    --ok-bg:#0f2a1c; --bad-bg:#331319; --warn-bg:#332405;
+    --zoneA:#7c9bff; --zoneA-bg:#1c2440; --zoneB:#c398ff; --zoneB-bg:#2a1d40; --zoneC:#ffb066; --zoneC-bg:#3a2712;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+  }
+  html{scroll-padding-top:calc(70px + env(safe-area-inset-top,0px));}
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:"Inter","Noto Sans Thai",-apple-system,Segoe UI,Roboto,sans-serif;line-height:1.55;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:1000px;margin:0 auto;padding:22px 16px 70px;}
+  h1{font-size:1.32rem;font-weight:800;margin:0 0 4px;letter-spacing:-.01em;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;display:inline-block;}
+  .sub{color:var(--muted);margin:0 0 18px;font-size:.87rem;max-width:640px;}
+  .tabs{display:flex;gap:6px;margin-bottom:20px;position:sticky;top:env(safe-area-inset-top,0px);background:var(--bg);padding:8px 0;z-index:5;border-radius:14px;}
+  .tab-btn{flex:1;padding:11px;border-radius:12px;border:none;background:var(--card);color:var(--muted);font-size:.85rem;font-weight:600;cursor:pointer;box-shadow:var(--shadow);transition:.15s;}
+  .tab-btn.active{background:var(--grad);color:#fff;box-shadow:0 4px 14px rgba(139,60,224,.35);}
+  .card{background:var(--card);border-radius:18px;padding:20px;margin-bottom:16px;box-shadow:var(--shadow);}
+  .card h2{font-size:1rem;font-weight:700;margin:0 0 14px;display:flex;align-items:center;gap:8px;}
+  .grid2{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
+  @media (max-width:560px){.grid2{grid-template-columns:1fr;}}
+  label{display:block;font-size:.78rem;color:var(--muted);margin-bottom:5px;font-weight:500;}
+  input,select,textarea{width:100%;padding:10px 12px;border:1.5px solid transparent;border-radius:10px;background:var(--bg);color:var(--text);font-size:.9rem;font-family:inherit;transition:.15s;}
+  input:focus,select:focus,textarea:focus{outline:none;border-color:var(--primary);background:var(--card);}
+  textarea{resize:vertical;min-height:52px;}
+  .field{margin-bottom:12px;}
+  button{font-family:inherit;}
+  button.primary{background:var(--grad);color:#fff;border:none;border-radius:12px;padding:12px 18px;font-size:.94rem;font-weight:700;cursor:pointer;width:100%;transition:.15s;}
+  button.primary:hover:not(:disabled){filter:brightness(1.08);}
+  button.primary:disabled{opacity:.4;cursor:not-allowed;}
+  a.linkbtn{display:flex;align-items:center;justify-content:center;text-align:center;background:var(--grad);color:#fff;text-decoration:none;border-radius:12px;padding:12px;font-size:.88rem;font-weight:700;}
+  button.ghost{background:transparent;color:var(--bad);border:1.5px solid var(--bad-bg);border-radius:9px;padding:7px 12px;font-size:.76rem;cursor:pointer;font-weight:600;}
+  button.step{background:var(--primary-soft);color:var(--primary-d);border:none;border-radius:9px;padding:7px 12px;font-size:.76rem;cursor:pointer;font-weight:700;}
+  .msg{font-size:.84rem;margin-top:10px;font-weight:600;}
+  .msg.ok{color:var(--ok);} .msg.bad{color:var(--bad);}
+  .legend{display:flex;gap:16px;flex-wrap:wrap;font-size:.78rem;color:var(--muted);margin-bottom:14px;}
+  .legend span{display:inline-flex;align-items:center;gap:6px;}
+  .dot{width:12px;height:12px;border-radius:4px;display:inline-block;}
+  .dot.free{background:var(--ok-bg);border:1.5px solid var(--ok);}
+  .dot.taken{background:var(--bad-bg);border:1.5px solid var(--bad);}
+  .dot.sel{background:var(--primary);}
+  .zone-title{font-size:.8rem;font-weight:700;margin:16px 0 8px;color:var(--muted);text-transform:uppercase;letter-spacing:.03em;padding-left:10px;border-left:4px solid var(--zoneA);}
+  .zone-title[data-zone="B"]{border-left-color:var(--zoneB);}
+  .zone-title[data-zone="C"]{border-left-color:var(--zoneC);}
+  .zone-title:first-child{margin-top:0;}
+  .slots{display:grid;grid-template-columns:repeat(auto-fill,minmax(58px,1fr));gap:8px;}
+  .slot{aspect-ratio:1/1;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;cursor:pointer;background:var(--ok-bg);color:var(--ok);user-select:none;transition:.12s;}
+  .slot:hover{transform:translateY(-1px);}
+  .slot.taken{background:var(--bad-bg);color:var(--bad);cursor:not-allowed;opacity:.7;}
+  .slot.selected{background:var(--primary);color:#fff;box-shadow:0 4px 12px rgba(47,95,224,.4);}
+  .picked-bar{display:flex;align-items:center;justify-content:space-between;background:var(--primary-soft);border-radius:12px;padding:11px 14px;margin-top:14px;font-size:.88rem;color:var(--primary-d);font-weight:600;}
+  .booking{border-radius:14px;padding:14px 16px;margin-bottom:10px;background:var(--bg);font-size:.84rem;}
+  .booking-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap;}
+  .plate{font-weight:700;font-size:.92rem;}
+  .queue-no{color:var(--muted);font-weight:600;font-size:.75rem;margin-right:6px;}
+  .slotbadge{display:inline-block;font-size:.7rem;background:var(--grad);color:#fff;border-radius:6px;padding:2px 8px;margin-left:6px;font-weight:700;}
+  .status{font-size:.7rem;padding:3px 10px;border-radius:20px;font-weight:700;white-space:nowrap;}
+  .meta{color:var(--muted);margin-top:8px;line-height:1.7;}
+  .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
+  .empty{color:var(--muted);font-size:.88rem;text-align:center;padding:20px 0;}
+  table{width:100%;border-collapse:separate;border-spacing:4px;font-size:.72rem;}
+  th{font-weight:700;color:var(--muted);padding:4px;text-align:center;}
+  th.slotcol,td.slotcol{position:sticky;left:0;background:var(--card);z-index:1;font-weight:700;text-align:left;padding-left:8px;}
+  .table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:12px;}
+  .badge{font-size:.72rem;color:var(--muted);}
+  .hidden{display:none;}
+  #qrcodeCanvas{display:flex;flex-direction:column;align-items:center;gap:12px;margin:16px 0;}
+  #qrcodeCanvas img{border-radius:12px;box-shadow:var(--shadow);}
+  .qrinfo{background:var(--bg);border-radius:12px;padding:12px 14px;font-size:.82rem;text-align:left;margin:12px 0;line-height:1.8;}
+  .gridcell{font-size:.68rem;font-weight:700;border-radius:8px;padding:8px 4px;min-width:78px;text-align:center;white-space:nowrap;}
+  .kpi{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:2px;}
+  .kpi div{flex:1;min-width:100px;background:var(--bg);border-radius:14px;padding:12px;text-align:center;}
+  .kpi div.k-total{background:var(--zoneA-bg);} .kpi div.k-total .num{color:var(--zoneA);}
+  .kpi div.k-wait{background:var(--warn-bg);} .kpi div.k-wait .num{color:var(--warn);}
+  .kpi div.k-load{background:var(--zoneC-bg);} .kpi div.k-load .num{color:var(--zoneC);}
+  .kpi div.k-done{background:var(--ok-bg);} .kpi div.k-done .num{color:var(--ok);}
+  .kpi .num{font-size:1.4rem;font-weight:800;}
+  .kpi .lbl{font-size:.72rem;color:var(--muted);margin-top:2px;}
+  .filterbar{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;margin-bottom:14px;}
+  .filterbar .field{margin-bottom:0;min-width:160px;flex:1;}
+</style>
 </head>
 <body>
-    <h1>ระบบจัดการคิวรถ</h1>
+<div class="wrap">
+  <h1>🅿️ ระบบจองคิวรถบรรทุก & จัดการคลังสินค้า</h1>
+  <p class="sub">ฝั่งคนขับจองคิว รับ QR Gate Pass และดูเส้นทางไปคลัง — ฝั่งเจ้าหน้าที่คลังดูตารางคิวและอัปเดตสถานะแบบเรียลไทม์</p>
 
-    <!-- เชื่อมไฟล์ main.js ที่เราเพิ่งสร้างไป -->
-    <script type="module" src="main.js"></script>
+  <div class="tabs">
+    <button class="tab-btn active" id="tabBtnDriver" onclick="switchTab('driver')">🚚 คนขับ / บริษัทขนส่ง</button>
+    <button class="tab-btn" id="tabBtnManager" onclick="switchTab('manager')">🏭 เจ้าหน้าที่คลังสินค้า</button>
+  </div>
+
+  <!-- ===== DRIVER TAB ===== -->
+  <div id="tab-driver">
+    <div class="card">
+      <h2>1️⃣ เลือกวันและเวลาที่ต้องการจอง</h2>
+      <div class="grid2">
+        <div class="field"><label>วันที่จอง *</label><input id="f_date" type="date"></div>
+        <div class="field"><label>เวลาเริ่มจอด *</label><input id="f_start" type="time"></div>
+        <div class="field"><label>เวลาสิ้นสุด *</label><input id="f_end" type="time"></div>
+      </div>
+      <p class="badge">เลือกให้ครบ 3 ช่อง ผังช่องจอดด้านล่างจะอัปเดตตามช่วงเวลานี้ (สมมติจองในวันเดียวกัน ไม่ข้ามเที่ยงคืน)</p>
+    </div>
+
+    <div class="card">
+      <h2>2️⃣ เลือกช่อง Dock / ที่จอด</h2>
+      <div class="legend">
+        <span><i class="dot free"></i>ว่าง</span><span><i class="dot taken"></i>ไม่ว่าง</span><span><i class="dot sel"></i>ช่องที่เลือก</span>
+      </div>
+      <div id="slotMap"><p class="empty">กรุณาเลือกวันและเวลาก่อน เพื่อดูช่องที่ว่าง</p></div>
+      <div id="pickedBar" class="picked-bar hidden">
+        <span>เลือกช่องจอด: <strong id="pickedSlotText"></strong></span>
+        <button class="ghost" onclick="clearSlot()">ยกเลิกเลือก</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>3️⃣ รายละเอียดผู้จอง</h2>
+      <div class="grid2">
+        <div class="field"><label>ทะเบียนรถ *</label><input id="f_plate" placeholder="เช่น 70-1234 กรุงเทพฯ"></div>
+        <div class="field"><label>ประเภทรถ *</label>
+          <select id="f_type">
+            <option>รถบรรทุก 6 ล้อ</option><option>รถบรรทุก 10 ล้อ</option>
+            <option>รถเทรลเลอร์/หัวลาก</option><option>รถตู้ขนส่ง</option><option>รถกระบะ</option>
+          </select>
+        </div>
+        <div class="field"><label>ชื่อผู้ขับ/ผู้จอง *</label><input id="f_driver" placeholder="ชื่อ-นามสกุล"></div>
+        <div class="field"><label>เบอร์โทรติดต่อ *</label><input id="f_phone" placeholder="08x-xxx-xxxx"></div>
+        <div class="field"><label>บริษัท/หน่วยงาน</label><input id="f_company" placeholder="ไม่บังคับ"></div>
+        <div class="field"><label>ประเภทสินค้า *</label><input id="f_cargo" placeholder="เช่น สินค้าเกษตร, วัสดุก่อสร้าง"></div>
+      </div>
+      <div class="field"><label>หมายเหตุ</label><textarea id="f_notes" placeholder="ขนาดรถ, เงื่อนไขพิเศษ"></textarea></div>
+      <button class="primary" id="submitBtn" disabled>ยืนยันการจอง</button>
+      <div id="formMsg" class="msg"></div>
+    </div>
+
+    <div id="qrPanel" class="card hidden">
+      <h2>✅ Digital Gate Pass</h2>
+      <p class="badge">ใช้ QR โค้ดนี้สแกนเข้าประตูโกดัง — กดค้างที่รูปเพื่อบันทึกภาพเก็บไว้ได้</p>
+      <div id="qrcodeCanvas"></div>
+      <div class="qrinfo" id="qrInfoText"></div>
+      <button class="primary" onclick="closeQr()">ปิด</button>
+    </div>
+
+    <div class="card">
+      <h2>📍 แผนที่ & เส้นทางไปคลังสินค้า</h2>
+      <p class="badge" style="margin-bottom:10px">ที่ตั้งคลังสินค้า: มหาวิทยาลัยเทคโนโลยีพระจอมเกล้าพระนครเหนือ (มจพ.)</p>
+      <div class="grid2">
+        <div class="field"><label>ละติจูด</label><input id="wh_lat" value="13.819137"></div>
+        <div class="field"><label>ลองจิจูด</label><input id="wh_lng" value="100.514288"></div>
+        <div class="field"><label>&nbsp;</label><a class="linkbtn" id="mapLink" href="#" target="_blank" rel="noopener">🧭 เปิดเส้นทางใน Google Maps</a></div>
+      </div>
+      <p class="badge">มีจุดพักรถรอคิวก่อนถึงประตูคลัง แนะนำให้แจ้ง "กำลังเดินทาง" เมื่อออกจากต้นทาง</p>
+    </div>
+  </div>
+
+  <!-- ===== MANAGER TAB ===== -->
+  <div id="tab-manager" class="hidden">
+    <div class="card">
+      <h2>ภาพรวมคิว</h2>
+      <div class="filterbar">
+        <div class="field"><label>วันที่ดูภาพรวม/ตาราง</label><input id="mgr_date" type="date"></div>
+      </div>
+      <div class="kpi">
+        <div class="k-total"><div class="num" id="kpiTotal">0</div><div class="lbl">คิวทั้งหมด</div></div>
+        <div class="k-wait"><div class="num" id="kpiWaiting">0</div><div class="lbl">รอ/กำลังเดินทาง</div></div>
+        <div class="k-load"><div class="num" id="kpiLoading">0</div><div class="lbl">ถึงแล้ว/กำลังโหลด</div></div>
+        <div class="k-done"><div class="num" id="kpiDone">0</div><div class="lbl">เสร็จสิ้น</div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>🗓️ ตารางคิว Dock Schedule</h2>
+      <div class="filterbar">
+        <div class="field">
+          <label>แสดงเฉพาะโซน</label>
+          <select id="mgr_zone">
+            <option value="">ทุกโซน</option>
+            <option value="A">โซน A - รถบรรทุกใหญ่</option>
+            <option value="B">โซน B - รถตู้/กระบะ</option>
+            <option value="C">โซน C - รถเทรลเลอร์</option>
+          </select>
+        </div>
+      </div>
+      <div class="legend">
+        <span><i class="dot free"></i>ว่าง</span><span><i class="dot taken"></i>มีจอง (สีตามสถานะ, แสดงป้ายทะเบียนเต็ม)</span>
+      </div>
+      <div class="table-wrap"><table id="dockGrid"></table></div>
+    </div>
+
+    <div class="card">
+      <h2>✅ Check-in & จัดการสถานะ <span class="badge">(เรียงตามลำดับที่แจ้งจองเข้ามาก่อน-หลัง)</span></h2>
+      <div id="bookingList"><p class="empty">กำลังโหลดข้อมูล...</p></div>
+    </div>
+  </div>
+
+
+</div>
+
+<script>
+const ZONES = [
+  {name:'โซน A - รถบรรทุกใหญ่', prefix:'A', count:8},
+  {name:'โซน B - รถตู้/กระบะ', prefix:'B', count:8},
+  {name:'โซน C - รถเทรลเลอร์', prefix:'C', count:6},
+];
+const HOURS = Array.from({length:24},(_,i)=>String(i).padStart(2,'0')+':00');
+const STATUS_FLOW = ['pending','confirmed','en_route','arrived','loading','completed'];
+const STATUS_META = {
+  pending:   {label:'รอยืนยัน',        bg:'#fdf3df', fg:'#8a5a05', next:'confirmed', nextLabel:'ยืนยันการจอง'},
+  confirmed: {label:'ยืนยันแล้ว',      bg:'#e3edff', fg:'#1e4bb8', next:'en_route',  nextLabel:'แจ้งกำลังเดินทาง'},
+  en_route:  {label:'กำลังเดินทาง',    bg:'#f0e7ff', fg:'#6b2fb3', next:'arrived',   nextLabel:'แจ้งถึงแล้ว'},
+  arrived:   {label:'ถึงแล้ว',         bg:'#dff7fb', fg:'#0e6d84', next:'loading',   nextLabel:'แจ้งกำลังโหลดสินค้า'},
+  loading:   {label:'กำลังโหลดสินค้า', bg:'#feead2', fg:'#95500a', next:'completed', nextLabel:'แจ้งเสร็จสิ้น'},
+  completed: {label:'เสร็จสิ้น',       bg:'#e5f8ee', fg:'#0f7a44', next:null,        nextLabel:null},
+  cancelled: {label:'ยกเลิกแล้ว',      bg:'#fdecee', fg:'#b1263a', next:null,        nextLabel:null},
+};
+
+let dbNs = null;
+let allBookings = [];
+let selectedSlot = null;
+
+function switchTab(t){
+  document.getElementById('tab-driver').classList.toggle('hidden', t!=='driver');
+  document.getElementById('tab-manager').classList.toggle('hidden', t!=='manager');
+  document.getElementById('tabBtnDriver').classList.toggle('active', t==='driver');
+  document.getElementById('tabBtnManager').classList.toggle('active', t==='manager');
+  if(t==='manager'){ renderGrid(); renderList(); renderKpi(); }
+}
+
+function computeDuration(start,end){
+  if(!start||!end) return null;
+  const [sh,sm]=start.split(":").map(Number), [eh,em]=end.split(":").map(Number);
+  let d = (eh*60+em)-(sh*60+sm);
+  if(d<=0) d += 24*60;
+  return d;
+}
+function toMin(t){ const [h,m]=t.split(":").map(Number); return h*60+m; }
+function overlaps(aS,aE,bS,bE){ return toMin(aS) < toMin(bE) && toMin(bS) < toMin(aE); }
+function fmtDuration(mins){ if(mins==null||isNaN(mins)) return ""; const h=Math.floor(mins/60), m=mins%60; return `รวม ${h} ชม. ${m} นาที`; }
+function esc(s){ return String(s??'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+function currentSelection(){
+  return { date: document.getElementById('f_date').value, start: document.getElementById('f_start').value, end: document.getElementById('f_end').value };
+}
+function takenSlotIds(date,start,end){
+  if(!date||!start||!end) return new Set();
+  const s = new Set();
+  allBookings.forEach(b=>{
+    if(b.status==='cancelled') return;
+    if(b.booking_date!==date) return;
+    if(overlaps(start,end,b.start_time,b.end_time)) s.add(b.slot_id);
+  });
+  return s;
+}
+function renderSlotMap(){
+  const {date,start,end} = currentSelection();
+  const mapEl = document.getElementById('slotMap');
+  if(!date||!start||!end){ mapEl.innerHTML = '<p class="empty">กรุณาเลือกวันและเวลาก่อน เพื่อดูช่องที่ว่าง</p>'; return; }
+  const taken = takenSlotIds(date,start,end);
+  if(taken.has(selectedSlot)) selectedSlot = null;
+  let html = '';
+  ZONES.forEach(z=>{
+    html += `<div class="zone-title" data-zone="${z.prefix}">${esc(z.name)}</div><div class="slots">`;
+    for(let i=1;i<=z.count;i++){
+      const id = z.prefix+i, isTaken = taken.has(id), isSel = selectedSlot===id;
+      html += `<div class="slot ${isTaken?'taken':''} ${isSel?'selected':''}" data-id="${id}" data-zone="${esc(z.name)}" ${isTaken?'':'onclick="pickSlot(this)"'}>${id}</div>`;
+    }
+    html += `</div>`;
+  });
+  mapEl.innerHTML = html;
+  updatePickedBar();
+}
+window.pickSlot = function(el){ selectedSlot = el.getAttribute('data-id'); window._selectedZone = el.getAttribute('data-zone'); renderSlotMap(); }
+window.clearSlot = function(){ selectedSlot = null; renderSlotMap(); }
+function updatePickedBar(){
+  const bar = document.getElementById('pickedBar'), submitBtn = document.getElementById('submitBtn');
+  if(selectedSlot){ bar.classList.remove('hidden'); document.getElementById('pickedSlotText').textContent = selectedSlot; submitBtn.disabled = false; }
+  else{ bar.classList.add('hidden'); submitBtn.disabled = true; }
+}
+['f_date','f_start','f_end'].forEach(id=>{ document.getElementById(id).addEventListener('change', ()=>{ selectedSlot=null; renderSlotMap(); }); });
+
+function updateMapLink(){
+  const lat = document.getElementById('wh_lat').value.trim();
+  const lng = document.getElementById('wh_lng').value.trim();
+  document.getElementById('mapLink').href = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(lat)},${encodeURIComponent(lng)}`;
+}
+document.getElementById('wh_lat').addEventListener('input', updateMapLink);
+document.getElementById('wh_lng').addEventListener('input', updateMapLink);
+
+function renderList(){
+  const el = document.getElementById('bookingList');
+  if(!allBookings.length){ el.innerHTML = '<p class="empty">ยังไม่มีการจอง</p>'; return; }
+  const items = [...allBookings].sort((a,b)=> (a.created_at||'').localeCompare(b.created_at||''));
+  el.innerHTML = items.map((b,i)=>{
+    const meta = STATUS_META[b.status] || STATUS_META.pending;
+    let actions = '';
+    if(meta.next) actions += `<button class="step" onclick="advanceStatus('${b._id}','${meta.next}')">${meta.nextLabel}</button>`;
+    if(b.status!=='cancelled' && b.status!=='completed') actions += `<button class="ghost" onclick="cancelBooking('${b._id}')">ยกเลิกการจอง</button>`;
+    return `<div class="booking">
+      <div class="booking-top"><div><span class="queue-no">#${i+1}</span><span class="plate">${esc(b.vehicle_plate)}</span><span class="slotbadge">${esc(b.slot_id)}</span></div>
+      <span class="status" style="background:${meta.bg};color:${meta.fg}">${meta.label}</span></div>
+      <div class="meta">📅 ${esc(b.booking_date)} &nbsp; ⏰ ${esc(b.start_time)}–${esc(b.end_time)} &nbsp; (${fmtDuration(b.duration_minutes)})<br>
+      🚚 ${esc(b.vehicle_type)} &nbsp; 📦 ${esc(b.cargo_type)} &nbsp; 👤 ${esc(b.driver_name)} &nbsp; 📞 ${esc(b.phone)}${b.company?(' &nbsp; 🏢 '+esc(b.company)):''}
+      ${b.notes?('<br>📝 '+esc(b.notes)):''}</div>
+      <div class="actions">${actions}</div></div>`;
+  }).join('');
+}
+window.advanceStatus = async function(id,next){ if(!dbNs) return; try{ await dbNs.doc('bookings/'+id).update({status:next}); }catch(err){ console.error(err); } }
+window.cancelBooking = async function(id){ if(!dbNs) return; try{ await dbNs.doc('bookings/'+id).update({status:'cancelled'}); }catch(err){ console.error(err); } }
+
+function renderKpi(){
+  const today = document.getElementById('mgr_date').value || new Date().toISOString().slice(0,10);
+  const todays = allBookings.filter(b=>b.booking_date===today);
+  document.getElementById('kpiTotal').textContent = todays.length;
+  document.getElementById('kpiWaiting').textContent = todays.filter(b=>['pending','confirmed','en_route'].includes(b.status)).length;
+  document.getElementById('kpiLoading').textContent = todays.filter(b=>['arrived','loading'].includes(b.status)).length;
+  document.getElementById('kpiDone').textContent = todays.filter(b=>b.status==='completed').length;
+}
+
+function renderGrid(){
+  const date = document.getElementById('mgr_date').value;
+  const zoneFilter = document.getElementById('mgr_zone').value;
+  const table = document.getElementById('dockGrid');
+  if(!date){ table.innerHTML = '<tr><td class="empty">กรุณาเลือกวันที่</td></tr>'; return; }
+  const slots = ZONES.filter(z=>!zoneFilter || z.prefix===zoneFilter).flatMap(z=>Array.from({length:z.count},(_,i)=>z.prefix+(i+1)));
+  let head = '<tr><th class="slotcol">ช่อง</th>' + HOURS.map(h=>`<th>${h}</th>`).join('') + '</tr>';
+  let rows = slots.map(slot=>{
+    let cells = HOURS.map(h=>{
+      const hEnd = String(Number(h.slice(0,2))+1).padStart(2,'0')+':00';
+      const b = allBookings.find(bb=> bb.status!=='cancelled' && bb.booking_date===date && bb.slot_id===slot && overlaps(h,hEnd,bb.start_time,bb.end_time));
+      if(b){ const meta = STATUS_META[b.status]||STATUS_META.pending; return `<td><div class="gridcell" style="background:${meta.bg};color:${meta.fg}" title="${esc(b.vehicle_plate)} · ${meta.label}">${esc(b.vehicle_plate)}</div></td>`; }
+      return `<td><div class="gridcell" style="background:var(--ok-bg);color:var(--ok)">·</div></td>`;
+    }).join('');
+    return `<tr><td class="slotcol">${slot}</td>${cells}</tr>`;
+  }).join('');
+  table.innerHTML = head + rows;
+}
+document.getElementById('mgr_date').addEventListener('change', ()=>{ renderGrid(); renderKpi(); });
+document.getElementById('mgr_zone').addEventListener('change', renderGrid);
+
+function showQr(id,data){
+  const wrap = document.getElementById('qrcodeCanvas'); wrap.innerHTML = '';
+  const payload = `PARK-BOOKING|id:${id}|slot:${data.slot_id}|plate:${data.vehicle_plate}|date:${data.booking_date}|time:${data.start_time}-${data.end_time}`;
+  const genEl = document.createElement('div');
+  try{
+    if(window.QRCode){
+      new QRCode(genEl, {text:payload, width:220, height:220, correctLevel: QRCode.CorrectLevel.M});
+      setTimeout(()=>{
+        const canvas = genEl.querySelector('canvas');
+        const img = document.createElement('img');
+        img.width = 220; img.height = 220; img.alt = 'QR Gate Pass';
+        img.src = canvas ? canvas.toDataURL('image/png') : (genEl.querySelector('img')?.src || '');
+        const dl = document.createElement('a');
+        dl.href = img.src; dl.download = 'gate-pass-'+data.vehicle_plate+'.png'; dl.className='linkbtn'; dl.style.maxWidth='220px';
+        dl.textContent = '⬇️ ดาวน์โหลดรูป QR';
+        wrap.innerHTML=''; wrap.appendChild(img); wrap.appendChild(dl);
+      }, 60);
+    } else { wrap.textContent = payload; }
+  }catch(e){ wrap.textContent = payload; }
+  document.getElementById('qrInfoText').innerHTML = `รหัสจอง: ${esc(id)}<br>ช่อง: ${esc(data.slot_id)} (${esc(data.slot_zone)})<br>ทะเบียน: ${esc(data.vehicle_plate)}<br>วันที่: ${esc(data.booking_date)} เวลา ${esc(data.start_time)}–${esc(data.end_time)}`;
+  document.getElementById('qrPanel').classList.remove('hidden');
+  document.getElementById('qrPanel').scrollIntoView({behavior:'smooth', block:'start'});
+}
+window.closeQr = function(){ document.getElementById('qrPanel').classList.add('hidden'); }
+
+async function init(){
+  updateMapLink();
+  const todayStr = new Date().toISOString().slice(0,10);
+  document.getElementById('mgr_date').value = todayStr;
+  try{ dbNs = await claude.use('db'); }catch(e){ dbNs = null; }
+  if(!dbNs){ document.getElementById('bookingList').innerHTML = '<p class="empty">ไม่สามารถเชื่อมต่อฐานข้อมูลได้ในขณะนี้</p>'; return; }
+  try{
+    dbNs.collection('bookings').onSnapshot(snap=>{
+      allBookings = snap.docs.map(d=>({_id:d.id, ...d.data()}));
+      renderSlotMap();
+      if(!document.getElementById('tab-manager').classList.contains('hidden')){ renderGrid(); renderList(); renderKpi(); }
+    });
+  }catch(err){ console.error(err); document.getElementById('bookingList').innerHTML = '<p class="empty">โหลดข้อมูลไม่สำเร็จ</p>'; }
+}
+
+document.getElementById('submitBtn').addEventListener('click', async ()=>{
+  const {date,start,end} = currentSelection();
+  const plate=document.getElementById('f_plate').value.trim();
+  const type=document.getElementById('f_type').value;
+  const driver=document.getElementById('f_driver').value.trim();
+  const phone=document.getElementById('f_phone').value.trim();
+  const company=document.getElementById('f_company').value.trim();
+  const cargo=document.getElementById('f_cargo').value.trim();
+  const notes=document.getElementById('f_notes').value.trim();
+  const msgEl=document.getElementById('formMsg');
+  if(!selectedSlot||!date||!start||!end||!plate||!driver||!phone||!cargo){
+    msgEl.textContent="กรุณาเลือกช่องจอดและกรอกข้อมูลที่มีเครื่องหมาย * ให้ครบถ้วน"; msgEl.className="msg bad"; return;
+  }
+  const taken = takenSlotIds(date,start,end);
+  if(taken.has(selectedSlot)){
+    msgEl.textContent="ช่องนี้เพิ่งถูกจองไปโดยผู้อื่น กรุณาเลือกช่องใหม่"; msgEl.className="msg bad"; selectedSlot=null; renderSlotMap(); return;
+  }
+  const duration = computeDuration(start,end);
+  const data = { slot_id:selectedSlot, slot_zone:window._selectedZone||'', vehicle_plate:plate, vehicle_type:type,
+    booking_date:date, start_time:start, end_time:end, duration_minutes:duration, driver_name:driver, phone,
+    company, cargo_type:cargo, notes, status:'pending', created_at:new Date().toISOString() };
+  if(!dbNs){ msgEl.textContent="ไม่สามารถเชื่อมต่อฐานข้อมูล"; msgEl.className="msg bad"; return; }
+  try{
+    const ref = await dbNs.collection('bookings').add(data);
+    const id = ref && ref.id ? ref.id : (typeof ref === 'string' ? ref : '');
+    msgEl.textContent="จองสำเร็จ! ช่อง "+selectedSlot+" ถูกจองแล้ว"; msgEl.className="msg ok";
+    ['f_plate','f_driver','f_phone','f_company','f_cargo','f_notes'].forEach(id2=>document.getElementById(id2).value='');
+    selectedSlot=null; renderSlotMap(); showQr(id, data);
+  }catch(err){ console.error(err); msgEl.textContent="เกิดข้อผิดพลาด กรุณาลองใหม่"; msgEl.className="msg bad"; }
+});
+
+init();
+</script>
 </body>
 </html>
