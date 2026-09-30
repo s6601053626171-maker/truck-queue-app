@@ -55,7 +55,6 @@
   button.primary{background:var(--grad);color:#fff;border:none;border-radius:12px;padding:12px 18px;font-size:.94rem;font-weight:700;cursor:pointer;width:100%;transition:.15s;}
   button.primary:hover:not(:disabled){filter:brightness(1.08);}
   button.primary:disabled{opacity:.4;cursor:not-allowed;}
-  a.linkbtn{display:flex;align-items:center;justify-content:center;text-align:center;background:var(--grad);color:#fff;text-decoration:none;border-radius:12px;padding:12px;font-size:.88rem;font-weight:700;}
   button.ghost{background:transparent;color:var(--bad);border:1.5px solid var(--bad-bg);border-radius:9px;padding:7px 12px;font-size:.76rem;cursor:pointer;font-weight:600;}
   button.step{background:var(--primary-soft);color:var(--primary-d);border:none;border-radius:9px;padding:7px 12px;font-size:.76rem;cursor:pointer;font-weight:700;}
   .msg{font-size:.84rem;margin-top:10px;font-weight:600;}
@@ -89,18 +88,13 @@
   .meta{color:var(--muted);margin-top:8px;line-height:1.7;}
   .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
   .empty{color:var(--muted);font-size:.88rem;text-align:center;padding:20px 0;}
-  table{width:100%;border-collapse:separate;border-spacing:4px;font-size:.72rem;}
-  th{font-weight:700;color:var(--muted);padding:4px;text-align:center;}
-  th.slotcol,td.slotcol{position:sticky;left:0;background:var(--card);z-index:1;font-weight:700;text-align:left;padding-left:8px;}
-  .table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:12px;}
   .badge{font-size:.72rem;color:var(--muted);}
-  .hidden{display:none;}
+  .hidden{display:none !important;}
   #qrcodeModal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;z-index:100;padding:16px;}
   .modal-card{background:var(--card);padding:24px;border-radius:20px;max-width:380px;width:100%;text-align:center;box-shadow:var(--shadow);}
   #qrcodeCanvas{display:flex;flex-direction:column;align-items:center;gap:12px;margin:16px 0;}
   #qrcodeCanvas img{border-radius:12px;box-shadow:var(--shadow);margin:0 auto;}
   .qrinfo{background:var(--bg);border-radius:12px;padding:12px 14px;font-size:.82rem;text-align:left;margin:12px 0;line-height:1.8;}
-  .gridcell{font-size:.68rem;font-weight:700;border-radius:8px;padding:8px 4px;min-width:78px;text-align:center;white-space:nowrap;}
   .kpi{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:2px;}
   .kpi div{flex:1;min-width:100px;background:var(--bg);border-radius:14px;padding:12px;text-align:center;}
   .kpi div.k-total{background:var(--zoneA-bg);} .kpi div.k-total .num{color:var(--zoneA);}
@@ -116,7 +110,7 @@
 <body>
 <div class="wrap">
   <h1>🅿️ ระบบจองคิวรถบรรทุก & จัดการคลังสินค้า</h1>
-  <p class="sub">ฝั่งคนขับจองคิว รับ QR Gate Pass และดูเส้นทางไปคลัง — ฝั่งเจ้าหน้าที่คลังดูตารางคิวและอัปเดตสถานะแบบเรียลไทม์</p>
+  <p class="sub">ฝั่งคนขับจองคิว รับ QR Gate Pass และดูสถานะ — ฝั่งเจ้าหน้าที่คลังดูตารางคิวและอัปเดตสถานะแบบเรียลไทม์</p>
 
   <div class="tabs">
     <button class="tab-btn active" id="tabBtnDriver" onclick="switchTab('driver')">🚚 คนขับ / บริษัทขนส่ง</button>
@@ -132,7 +126,6 @@
         <div class="field"><label>เวลาเริ่มจอด *</label><input id="f_start" type="time" value="09:00"></div>
         <div class="field"><label>เวลาสิ้นสุด *</label><input id="f_end" type="time" value="10:00"></div>
       </div>
-      <p class="badge">เลือกให้ครบ 3 ช่อง ผังช่องจอดด้านล่างจะอัปเดตตามช่วงเวลานี้</p>
     </div>
 
     <div class="card">
@@ -188,7 +181,6 @@
       <div id="bookingMsg" class="msg"></div>
     </div>
 
-    <!-- Active Booking List for Driver -->
     <div class="card">
       <h2>📋 รายการจองคิวของคุณ</h2>
       <div id="driverBookingList">
@@ -246,7 +238,6 @@
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
   import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-  // ใส่ Firebase Config ของโปรเจกต์คุณ
   const firebaseConfig = {
     apiKey: "AIzaSyDvVELT3wzRkozn1XnViVajQEBhwvzzXs",
     authDomain: "truck-queue-app.firebaseapp.com",
@@ -268,11 +259,9 @@
     console.error("Firebase init failed:", err);
   }
 
-  // ตั้งค่าวันที่เริ่มต้นเป็นวันนี้
   document.getElementById("f_date").valueAsDate = new Date();
   document.getElementById("m_filter_date").valueAsDate = new Date();
 
-  // สลับแท็บ
   window.switchTab = function(tab) {
     const isDriver = tab === 'driver';
     document.getElementById("tab-driver").classList.toggle("hidden", !isDriver);
@@ -281,7 +270,6 @@
     document.getElementById("tabBtnManager").classList.toggle("active", !isDriver);
   };
 
-  // เลือกช่อง Dock
   window.selectSlot = function(slotId) {
     selectedSlot = slotId;
     document.querySelectorAll(".slot").forEach(el => {
@@ -294,7 +282,6 @@
     document.getElementById("selectedSlotText").innerText = `ช่อง ${slotId}`;
   };
 
-  // บันทึกคิว
   window.submitBooking = async function() {
     const date = document.getElementById("f_date").value;
     const start = document.getElementById("f_start").value;
@@ -321,7 +308,7 @@
       queueNo: "Q-" + Math.floor(1000 + Math.random() * 9000),
       date, startTime: start, endTime: end,
       slot: selectedSlot, plate, driver, phone, remark,
-      status: "waiting", // waiting, loading, completed, cancelled
+      status: "waiting",
       createdAt: new Date().toISOString()
     };
 
@@ -351,7 +338,6 @@
     document.querySelectorAll(".slot").forEach(el => el.classList.remove("selected"));
   }
 
-  // ดึงข้อมูล Realtime จาก Firestore
   function initRealtimeListener() {
     if (!db) return;
     const q = query(collection(db, "queues"), orderBy("createdAt", "desc"));
@@ -366,7 +352,6 @@
     renderManagerView();
   }
 
-  // แสดงผลฝั่งคนขับ
   function renderDriverView() {
     const listEl = document.getElementById("driverBookingList");
     if (queues.length === 0) {
@@ -395,7 +380,6 @@
     `).join("");
   }
 
-  // แสดงผลฝั่งเจ้าหน้าที่คลัง
   window.renderManagerView = function() {
     const filterDate = document.getElementById("m_filter_date").value;
     const filterStatus = document.getElementById("m_filter_status").value;
@@ -404,7 +388,6 @@
     if (filterDate) filtered = filtered.filter(q => q.date === filterDate);
     if (filterStatus !== "all") filtered = filtered.filter(q => q.status === filterStatus);
 
-    // คำนวณ KPI
     document.getElementById("kpiTotal").innerText = filtered.length;
     document.getElementById("kpiWait").innerText = filtered.filter(q => q.status === 'waiting').length;
     document.getElementById("kpiLoad").innerText = filtered.filter(q => q.status === 'loading').length;
@@ -439,7 +422,6 @@
     `).join("");
   };
 
-  // อัปเดตสถานะคิว
   window.updateStatus = async function(id, newStatus) {
     if (db) {
       await updateDoc(doc(db, "queues", id), { status: newStatus });
@@ -450,7 +432,6 @@
     }
   };
 
-  // แสดง QR Code Modal
   window.showQR = function(queueNo, plate, slot, date, time) {
     const qrDiv = document.getElementById("qrcodeCanvas");
     qrDiv.innerHTML = "";
