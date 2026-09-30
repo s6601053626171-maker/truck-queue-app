@@ -8,84 +8,100 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root {
-    --primary: #5b46e5;
+    --primary: #4f46e5;
     --primary-hover: #4338ca;
-    --bg: #f3f4f6;
-    --card: #ffffff;
-    --text: #1f2937;
-    --muted: #6b7280;
-    --border: #e5e7eb;
+    --bg-color: #f3f4f6;
+    --card-bg: #ffffff;
+    --text-color: #1f2937;
+    --muted-color: #6b7280;
+    --border-color: #e5e7eb;
     
-    --free-bg: #e2e8f0;
-    --free-text: #475569;
-    --taken-bg: #fecdd3;
-    --taken-text: #9f1239;
-    --selected-bg: #3b82f6;
-    --selected-text: #ffffff;
+    --slot-free-bg: #e2e8f0;
+    --slot-free-text: #475569;
+    --slot-taken-bg: #cbd5e1;
+    --slot-selected-bg: #3b82f6;
   }
 
   * { box-sizing: border-box; font-family: 'Noto Sans Thai', sans-serif; }
-  body { margin: 0; background-color: #e5e7eb; padding: 20px 12px; color: var(--text); }
-  .container { max-width: 920px; margin: 0 auto; background: var(--card); border-radius: 16px; padding: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.06); }
+  body { margin: 0; background-color: #eef2f6; padding: 24px 16px; color: var(--text-color); }
+  .container { max-width: 1040px; margin: 0 auto; background: var(--card-bg); border-radius: 18px; padding: 28px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
 
-  /* Header Tabs */
-  .tabs-nav { display: flex; gap: 8px; background: #e0e7ff; padding: 5px; border-radius: 12px; margin-bottom: 20px; }
-  .tab-btn { flex: 1; padding: 12px; border: none; border-radius: 9px; font-weight: 700; cursor: pointer; font-size: 0.92rem; background: transparent; color: #4b5563; transition: 0.2s; }
-  .tab-btn.active { background: #4f46e5; color: #ffffff; box-shadow: 0 2px 8px rgba(79, 70, 229, 0.3); }
+  /* Title & Subtitle */
+  .app-header { margin-bottom: 20px; }
+  .app-title-box { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+  .title-icon { width: 18px; height: 18px; background: var(--primary); border-radius: 4px; display: inline-block; }
+  .app-title { font-size: 1.35rem; font-weight: 700; color: #111827; margin: 0; }
+  .app-subtitle { font-size: 0.88rem; color: #6b7280; margin: 0; line-height: 1.5; }
 
-  /* Section 1: Date & Time */
-  .time-bar { background: #f9fafb; border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 24px; }
-  .grid-3 { display: grid; grid-template-columns: 1.2fr 1fr 1fr; gap: 12px; margin-bottom: 8px; }
-  @media (max-width: 640px) { .grid-3 { grid-template-columns: 1fr; } }
-  
-  .field { display: flex; flex-direction: column; }
-  label { font-size: 0.85rem; color: #374151; margin-bottom: 6px; font-weight: 600; }
-  input, select, textarea {
-    padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 0.92rem; background: #fff; outline: none; transition: 0.2s;
-  }
-  input:focus, select:focus, textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(91, 70, 229, 0.15); }
-  .help-text { font-size: 0.78rem; color: var(--muted); margin-top: 4px; }
+  /* Navigation Tabs */
+  .tabs-nav { display: flex; gap: 10px; background: #f1f5f9; padding: 6px; border-radius: 12px; margin-bottom: 24px; }
+  .tab-btn { flex: 1; padding: 12px 16px; border: none; border-radius: 9px; font-weight: 700; cursor: pointer; font-size: 0.95rem; background: transparent; color: #64748b; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+  .tab-btn.active { background: #4f46e5; color: #ffffff; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25); }
 
-  /* Section Headers */
-  .sec-header { font-size: 1.05rem; font-weight: 700; margin: 20px 0 12px; display: flex; align-items: center; gap: 8px; color: #111827; }
+  /* Badge Titles */
+  .sec-title { font-size: 1.05rem; font-weight: 700; margin: 24px 0 14px; display: flex; align-items: center; gap: 10px; color: #111827; }
+  .num-badge { background: #3b82f6; color: white; border-radius: 6px; width: 24px; height: 24px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.88rem; font-weight: 700; flex-shrink: 0; }
 
-  /* Legend */
-  .legend { display: flex; gap: 16px; font-size: 0.82rem; color: var(--muted); margin-bottom: 16px; align-items: center; }
-  .legend-item { display: inline-flex; align-items: center; gap: 6px; }
+  /* Forms & Fields */
+  .field-group { display: flex; flex-direction: column; }
+  label { font-size: 0.86rem; color: #374151; margin-bottom: 6px; font-weight: 600; }
+  input, select, textarea { padding: 10px 14px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 0.92rem; background: #fff; outline: none; transition: 0.2s; width: 100%; }
+  input:focus, select:focus, textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15); }
+  .help-note { font-size: 0.8rem; color: #6b7280; margin-top: 8px; }
+
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  @media (max-width: 768px) { .grid-3 { grid-template-columns: 1fr; } }
+
+  /* Dock Slots Section */
+  .legend { display: flex; gap: 18px; font-size: 0.85rem; color: #6b7280; margin-bottom: 16px; align-items: center; }
+  .legend-item { display: flex; align-items: center; gap: 6px; }
   .dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
   .dot.free { background: #cbd5e1; }
-  .dot.taken { background: #f43f5e; }
+  .dot.taken { background: #94a3b8; }
   .dot.selected { background: #3b82f6; }
 
-  /* Dock Slots */
-  .zone-title { font-size: 0.9rem; font-weight: 700; color: #374151; margin: 16px 0 8px; padding-left: 8px; border-left: 4px solid var(--primary); }
-  .slots-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(64px, 1fr)); gap: 10px; }
-  
-  .slot-btn {
-    padding: 12px 0; border-radius: 10px; border: none; font-weight: 700; font-size: 0.88rem; cursor: pointer; text-align: center; background: var(--free-bg); color: var(--free-text); transition: all 0.15s ease;
-  }
+  .zone-header { font-size: 0.88rem; font-weight: 700; color: #475569; margin: 16px 0 10px; padding-left: 8px; border-left: 3px solid var(--primary); }
+  .slots-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); gap: 10px; }
+  .slot-btn { padding: 12px 0; border-radius: 8px; border: none; font-weight: 700; font-size: 0.9rem; cursor: pointer; text-align: center; background: #e2e8f0; color: #475569; transition: all 0.15s ease; }
   .slot-btn:hover:not(.taken) { background: #cbd5e1; }
-  .slot-btn.taken { background: var(--taken-bg); color: var(--taken-text); cursor: not-allowed; }
-  .slot-btn.selected { background: var(--selected-bg); color: var(--selected-text); box-shadow: 0 4px 12px rgba(59,130,246,0.35); }
+  .slot-btn.taken { background: #cbd5e1; color: #94a3b8; cursor: not-allowed; }
+  .slot-btn.selected { background: #3b82f6; color: #ffffff; box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3); }
 
-  .selected-info { margin-top: 14px; background: #eff6ff; color: #1e40af; border-radius: 10px; padding: 12px 16px; font-size: 0.9rem; font-weight: 600; display: flex; justify-content: space-between; align-items: center; }
-
-  /* Action Buttons */
-  .btn-submit {
-    width: 100%; background: #4f46e5; color: white; border: none; padding: 14px; border-radius: 10px; font-size: 1rem; font-weight: 700; cursor: pointer; margin-top: 18px; transition: 0.2s;
-  }
+  .btn-submit { width: 100%; background: #4f46e5; color: white; border: none; padding: 14px; border-radius: 10px; font-size: 1rem; font-weight: 700; cursor: pointer; margin-top: 20px; transition: 0.2s; }
   .btn-submit:hover { background: #4338ca; }
-  .status-msg { text-align: center; margin-top: 12px; font-weight: 600; font-size: 0.9rem; }
-  .status-msg.ok { color: #10b981; }
-  .status-msg.bad { color: #ef4444; }
 
-  .booking-card { background: #f9fafb; border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; margin-bottom: 12px; font-size: 0.88rem; }
-  .booking-header { display: flex; justify-content: space-between; align-items: center; font-weight: 700; margin-bottom: 6px; }
-  .badge-slot { background: #4f46e5; color: #fff; padding: 2px 8px; border-radius: 6px; font-size: 0.78rem; }
-  .badge-status { padding: 3px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 700; }
-  .st-waiting { background: #fef3c7; color: #b45309; }
-  .st-loading { background: #e0e7ff; color: #3730a3; }
-  .st-done { background: #d1fae5; color: #065f46; }
+  /* Section 4: Map & Route */
+  .map-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; margin-top: 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; }
+  .map-info p { margin: 4px 0; font-size: 0.88rem; color: #475569; }
+  .btn-maps { background: #3b82f6; color: white; border: none; padding: 10px 18px; border-radius: 8px; font-weight: 600; text-decoration: none; font-size: 0.88rem; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
+
+  /* TAB 2: STAFF DASHBOARD & STATS */
+  .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 24px; }
+  @media (max-width: 640px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
+  
+  .stat-card { background: #f8fafc; border-radius: 12px; padding: 16px; text-align: center; border: 1px solid #e2e8f0; }
+  .stat-card.blue { background: #eff6ff; border-color: #bfdbfe; }
+  .stat-card.yellow { background: #fefce8; border-color: #fef08a; }
+  .stat-card.green { background: #f0fdf4; border-color: #bbf7d0; }
+  .stat-num { font-size: 1.8rem; font-weight: 800; color: #1e293b; line-height: 1.2; }
+  .stat-label { font-size: 0.82rem; color: #64748b; font-weight: 600; margin-top: 4px; }
+
+  /* Schedule Table */
+  .table-card { background: #fff; border-radius: 12px; border: 1px solid var(--border-color); padding: 20px; margin-top: 16px; }
+  .schedule-wrapper { overflow-x: auto; border: 1px solid var(--border-color); border-radius: 8px; margin-top: 12px; }
+  .schedule-table { width: 100%; border-collapse: collapse; min-width: 1000px; font-size: 0.82rem; text-align: center; }
+  .schedule-table th, .schedule-table td { border: 1px solid #e5e7eb; padding: 8px 4px; }
+  .schedule-table th { background: #f8fafc; color: #475569; font-weight: 700; position: sticky; top: 0; }
+  .schedule-table th:first-child, .schedule-table td:first-child { position: sticky; left: 0; background: #f1f5f9; font-weight: 700; color: #1e293b; z-index: 2; width: 65px; }
+
+  /* Check-in Status Cards */
+  .queue-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; margin-top: 12px; }
+  .queue-card-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .queue-card-title { font-weight: 700; font-size: 1rem; color: #1e293b; }
+  .queue-card-details { font-size: 0.85rem; color: #475569; line-height: 1.6; }
+  .queue-actions { display: flex; gap: 8px; margin-top: 12px; }
+  .btn-action { padding: 6px 12px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff; font-size: 0.8rem; font-weight: 600; cursor: pointer; }
+  .btn-action.cancel { color: #ef4444; border-color: #fca5a5; }
 
   .hidden { display: none !important; }
 </style>
@@ -93,250 +109,250 @@
 <body>
 
 <div class="container">
-  <!-- Tabs Navigation -->
-  <div class="tabs-nav">
-    <button class="tab-btn active" id="btnTabDriver" onclick="switchTab('driver')">🚚 คนขับ / บริษัทขนส่ง</button>
-    <button class="tab-btn" id="btnTabStaff" onclick="switchTab('staff')">🏭 เจ้าหน้าที่คลังสินค้า</button>
+  <!-- Header Title -->
+  <div class="app-header">
+    <div class="app-title-box">
+      <span class="title-icon"></span>
+      <h1 class="app-title">ระบบจองคิวรถบรรทุก & จัดการคลังสินค้า</h1>
+    </div>
+    <p class="app-subtitle">ฝั่งคนขับจองคิว รับ QR Gate Pass และดูเส้นทางไปคลัง — ฝั่งเจ้าหน้าที่คลังดูตารางคิวและอัปเดตสถานะแบบเรียลไทม์</p>
   </div>
 
-  <!-- TAB 1: DRIVER VIEW -->
-  <div id="tab-driver">
-    <div class="time-bar">
-      <div class="grid-3">
-        <div class="field">
-          <label>วันที่จอง *</label>
-          <input type="date" id="f_date" value="2026-09-30">
-        </div>
-        <div class="field">
-          <label>เวลาเริ่มจอด *</label>
-          <input type="time" id="f_start" value="17:07">
-        </div>
-        <div class="field">
-          <label>เวลาสิ้นสุด *</label>
-          <input type="time" id="f_end" value="21:11">
-        </div>
-      </div>
-      <div class="help-text">กรอกให้ครบ 3 ช่อง ผังช่องจอดด้านล่างจะอัปเดตตามช่วงเวลานี้ (สมมติจองในวันเดียวกัน ไม่ข้ามเที่ยงคืน)</div>
-    </div>
+  <!-- Navigation Tabs -->
+  <div class="tabs-nav">
+    <button class="tab-btn active" id="tabBtnDriver" onclick="switchTab('driver')">🚚 คนขับ / บริษัทขนส่ง</button>
+    <button class="tab-btn" id="tabBtnStaff" onclick="switchTab('staff')">🏭 เจ้าหน้าที่คลังสินค้า</button>
+  </div>
 
-    <!-- Section 2: Select Dock Slot -->
-    <div class="sec-header">2️⃣ เลือกช่อง Dock / ที่จอด</div>
+  <!-- ==================== TAB 1: DRIVER FORM ==================== -->
+  <div id="tabDriver">
+    <!-- Section 1 -->
+    <div class="sec-title"><span class="num-badge">1</span> เลือกวันและเวลาที่ต้องการจอง</div>
+    <div class="grid-3">
+      <div class="field-group">
+        <label>วันที่จอง *</label>
+        <input type="date" id="f_date" value="2026-09-30">
+      </div>
+      <div class="field-group">
+        <label>เวลาเริ่มจอด *</label>
+        <input type="time" id="f_start" value="17:07">
+      </div>
+      <div class="field-group">
+        <label>เวลาสิ้นสุด *</label>
+        <input type="time" id="f_end" value="21:11">
+      </div>
+    </div>
+    <div class="help-note">เลือกให้ครบ 3 ช่อง ผังช่องจอดด้านล่างจะอัปเดตตามช่วงเวลานี้ (สมมติจองในวันเดียวกัน ไม่ข้ามเที่ยงคืน)</div>
+
+    <!-- Section 2 -->
+    <div class="sec-title"><span class="num-badge">2</span> เลือกช่อง Dock / ที่จอด</div>
     <div class="legend">
       <span class="legend-item"><i class="dot free"></i> ว่าง</span>
       <span class="legend-item"><i class="dot taken"></i> ไม่ว่าง</span>
       <span class="legend-item"><i class="dot selected"></i> ช่องที่เลือก</span>
     </div>
 
-    <div class="zone-title">โซน A - รถบรรทุกใหญ่</div>
+    <div class="zone-header">โซน A - รถบรรทุกใหญ่</div>
     <div class="slots-grid">
-      <button type="button" class="slot-btn" onclick="selectSlot('A1', this)">A1</button>
-      <button type="button" class="slot-btn taken" disabled>A2</button>
-      <button type="button" class="slot-btn" onclick="selectSlot('A3', this)">A3</button>
-      <button type="button" class="slot-btn" onclick="selectSlot('A4', this)">A4</button>
-      <button type="button" class="slot-btn" onclick="selectSlot('A5', this)">A5</button>
-      <button type="button" class="slot-btn" onclick="selectSlot('A6', this)">A6</button>
-      <button type="button" class="slot-btn" onclick="selectSlot('A7', this)">A7</button>
-      <button type="button" class="slot-btn" onclick="selectSlot('A8', this)">A8</button>
+      <button class="slot-btn" onclick="selectSlot('A1', this)">A1</button>
+      <button class="slot-btn" onclick="selectSlot('A2', this)">A2</button>
+      <button class="slot-btn" onclick="selectSlot('A3', this)">A3</button>
+      <button class="slot-btn" onclick="selectSlot('A4', this)">A4</button>
+      <button class="slot-btn" onclick="selectSlot('A5', this)">A5</button>
+      <button class="slot-btn" onclick="selectSlot('A6', this)">A6</button>
+      <button class="slot-btn" onclick="selectSlot('A7', this)">A7</button>
+      <button class="slot-btn" onclick="selectSlot('A8', this)">A8</button>
     </div>
 
-    <div class="zone-title">โซน B - รถตู้/กระบะ</div>
+    <div class="zone-header">โซน B - รถตู้/กระบะ</div>
     <div class="slots-grid">
-      <button type="button" class="slot-btn" onclick="selectSlot('B1', this)">B1</button>
-      <button type="button" class="slot-btn" onclick="selectSlot('B2', this)">B2</button>
-      <button type="button" class="slot-btn" onclick="selectSlot('B3', this)">B3</button>
-      <button type="button" class="slot-btn" onclick="selectSlot('B4', this)">B4</button>
-      <button type="button" class="slot-btn" onclick="selectSlot('B5', this)">B5</button>
-      <button type="button" class="slot-btn" onclick="selectSlot('B6', this)">B6</button>
-      <button type="button" class="slot-btn" onclick="selectSlot('B7', this)">B7</button>
-      <button type="button" class="slot-btn" onclick="selectSlot('B8', this)">B8</button>
+      <button class="slot-btn" onclick="selectSlot('B1', this)">B1</button>
+      <button class="slot-btn" onclick="selectSlot('B2', this)">B2</button>
+      <button class="slot-btn" onclick="selectSlot('B3', this)">B3</button>
+      <button class="slot-btn" onclick="selectSlot('B4', this)">B4</button>
+      <button class="slot-btn" onclick="selectSlot('B5', this)">B5</button>
+      <button class="slot-btn" onclick="selectSlot('B6', this)">B6</button>
+      <button class="slot-btn" onclick="selectSlot('B7', this)">B7</button>
+      <button class="slot-btn" onclick="selectSlot('B8', this)">B8</button>
     </div>
 
-    <div class="zone-title">โซน C - รถเทรลเลอร์</div>
-    <div class="slots-grid">
-      <button type="button" class="slot-btn" onclick="selectSlot('C1', this)">C1</button>
-      <button type="button" class="slot-btn" onclick="selectSlot('C2', this)">C2</button>
-      <button type="button" class="slot-btn" onclick="selectSlot('C3', this)">C3</button>
-      <button type="button" class="slot-btn" onclick="selectSlot('C4', this)">C4</button>
-      <button type="button" class="slot-btn" onclick="selectSlot('C5', this)">C5</button>
-      <button type="button" class="slot-btn" onclick="selectSlot('C6', this)">C6</button>
-    </div>
-
-    <div class="selected-info">
-      <span>ช่องจอดที่เลือก:</span>
-      <strong id="selectedSlotText">ยังไม่ได้เลือก</strong>
-    </div>
-
-    <!-- Section 3: Driver Info -->
-    <div class="sec-header">3️⃣ รายละเอียดผู้จอง</div>
-    <form id="bookingForm" onsubmit="event.preventDefault(); submitBooking();">
-      <div class="grid-3">
-        <div class="field">
+    <!-- Section 3 -->
+    <div class="sec-title"><span class="num-badge">3</span> รายละเอียดผู้จอง</div>
+    <form onsubmit="event.preventDefault(); handleBooking();">
+      <div class="grid-3" style="margin-bottom: 12px;">
+        <div class="field-group">
           <label>ทะเบียนรถ *</label>
-          <input type="text" id="f_plate" placeholder="เช่น 34-7543" required>
+          <input type="text" id="f_plate" placeholder="เช่น 70-1234 กรุงเทพฯ" required>
         </div>
-        <div class="field">
+        <div class="field-group">
           <label>ประเภทรถ *</label>
           <select id="f_truck_type" required>
-            <option value="รถบรรทุกใหญ่">รถบรรทุกใหญ่</option>
-            <option value="รถตู้/กระบะ">รถตู้/กระบะ</option>
+            <option value="รถบรรทุก 6 ล้อ">รถบรรทุก 6 ล้อ</option>
+            <option value="รถบรรทุก 10 ล้อ">รถบรรทุก 10 ล้อ</option>
+            <option value="รถกระบะ">รถกระบะ</option>
             <option value="รถเทรลเลอร์">รถเทรลเลอร์</option>
           </select>
         </div>
-        <div class="field">
+        <div class="field-group">
           <label>ชื่อผู้ติดต่อ/ผู้จอง *</label>
-          <input type="text" id="f_driver" placeholder="ระบุชื่อผู้จอง" required>
+          <input type="text" id="f_driver" placeholder="ชื่อ-นามสกุล" required>
         </div>
       </div>
 
-      <div class="grid-3" style="margin-top: 12px;">
-        <div class="field">
-          <label>เบอร์โทรศัพท์ *</label>
-          <input type="tel" id="f_phone" placeholder="096538732" required>
+      <div class="grid-3">
+        <div class="field-group">
+          <label>เบอร์โทรติดต่อ *</label>
+          <input type="tel" id="f_phone" placeholder="08x-xxx-xxxx" required>
         </div>
-        <div class="field">
+        <div class="field-group">
           <label>บริษัท/หน่วยงาน</label>
           <input type="text" id="f_company" placeholder="ไม่บังคับ">
         </div>
-        <div class="field">
-          <label>หมายเหตุ</label>
-          <input type="text" id="f_remark" placeholder="รายละเอียดเพิ่มเติม">
+        <div class="field-group">
+          <label>ประเภทสินค้า *</label>
+          <input type="text" id="f_product" placeholder="เช่น สินค้าเกษตร, วัสดุก่อสร้าง" required>
         </div>
       </div>
 
-      <button type="submit" class="btn-submit" id="btnSubmit">ยืนยันการจองคิว</button>
-      <div id="statusMsg" class="status-msg"></div>
+      <div class="field-group" style="margin-top: 12px;">
+        <label>หมายเหตุ</label>
+        <input type="text" id="f_remark" placeholder="ขนาดรถ, เงื่อนไขพิเศษ">
+      </div>
+
+      <button type="submit" class="btn-submit">ยืนยันการจอง</button>
     </form>
+
+    <!-- Section 4 -->
+    <div class="sec-title">📍 แผนที่ & เส้นทางไปคลังสินค้า</div>
+    <div class="map-card">
+      <div class="map-info">
+        <p><strong>ที่ตั้งคลังสินค้า:</strong> มหาวิทยาลัยเทคโนโลยีพระจอมเกล้าพระนครเหนือ (มจพ.)</p>
+        <p><strong>ละติจูด:</strong> 13.819137 &nbsp;&nbsp; <strong>ลองจิจูด:</strong> 100.514288</p>
+        <p class="help-note" style="margin-top: 6px;">มีจุดพักรอคิวก่อนถึงประตูคลัง แนะนำให้คลิก "กำลังเดินทาง" เมื่อออกจากต้นทาง</p>
+      </div>
+      <a href="https://www.google.com/maps?q=13.819137,100.514288" target="_blank" class="btn-maps">📍 เปิดเส้นทางใน Google Maps</a>
+    </div>
   </div>
 
-  <!-- TAB 2: STAFF VIEW -->
-  <div id="tab-staff" class="hidden">
-    <div class="sec-header">📋 รายการคิวคลังสินค้า ทั้งหมด</div>
-    <div id="staffBookingList">
-      <div style="text-align:center; color:var(--muted); padding:20px;">กำลังโหลดรายการคิว...</div>
+  <!-- ==================== TAB 2: STAFF VIEW ==================== -->
+  <div id="tabStaff" class="hidden">
+    <!-- Queue Overview Stats -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+      <div style="font-weight: 700; font-size: 1.05rem;">ภาพรวมคิว</div>
+      <div style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem;">
+        <label style="margin: 0;">วันที่ดูภาพรวม/ตาราง:</label>
+        <input type="date" value="2026-09-30" style="width: auto; padding: 6px 10px;">
+      </div>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-num" id="statAll">1</div>
+        <div class="stat-label">คิวทั้งหมด</div>
+      </div>
+      <div class="stat-card blue">
+        <div class="stat-num" id="statWaiting" style="color: #2563eb;">1</div>
+        <div class="stat-label">รอ/กำลังเดินทาง</div>
+      </div>
+      <div class="stat-card yellow">
+        <div class="stat-num" id="statArrived" style="color: #ca8a04;">0</div>
+        <div class="stat-label">ถึงแล้ว/กำลังโหลด</div>
+      </div>
+      <div class="stat-card green">
+        <div class="stat-num" id="statDone" style="color: #16a34a;">0</div>
+        <div class="stat-label">เสร็จสิ้น</div>
+      </div>
+    </div>
+
+    <!-- Dock Schedule Table -->
+    <div class="table-card">
+      <div style="font-weight: 700; font-size: 1.05rem; margin-bottom: 12px;">📊 ตารางคิว Dock Schedule</div>
+      <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 12px; font-size: 0.88rem;">
+        <label style="margin: 0;">แสดงเฉพาะโซน:</label>
+        <select style="width: auto; padding: 6px 12px;">
+          <option>ทุกโซน</option>
+          <option>โซน A</option>
+          <option>โซน B</option>
+        </select>
+      </div>
+
+      <div class="schedule-wrapper">
+        <table class="schedule-table">
+          <thead>
+            <tr>
+              <th>ช่อง</th>
+              <th>00:00</th><th>01:00</th><th>02:00</th><th>03:00</th><th>04:00</th><th>05:00</th>
+              <th>06:00</th><th>07:00</th><th>08:00</th><th>09:00</th><th>10:00</th><th>11:00</th>
+              <th>12:00</th><th>13:00</th><th>14:00</th><th>15:00</th><th>16:00</th><th>17:00</th>
+              <th>18:00</th><th>19:00</th><th>20:00</th><th>21:00</th><th>22:00</th><th>23:00</th>
+            </tr>
+          </thead>
+          <tbody id="scheduleRows">
+            <!-- Rows dynamically created by JS -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Status Management Section -->
+    <div style="margin-top: 28px;">
+      <div style="font-weight: 700; font-size: 1.05rem; margin-bottom: 12px;">✅ Check-in & จัดการสถานะ (เรียงตามลำดับที่แจ้งจองเข้ามาก่อน-หลัง)</div>
+      
+      <div class="queue-card">
+        <div class="queue-card-head">
+          <div class="queue-card-title">#1 ก1234 <span style="font-size: 0.8rem; background: #e0e7ff; color: #3730a3; padding: 2px 8px; border-radius: 4px; margin-left: 6px;">B4</span></div>
+          <span style="font-size: 0.8rem; color: #2563eb; font-weight: 600;">รอ/กำลังเดินทาง</span>
+        </div>
+        <div class="queue-card-details">
+          📅 2026-09-26 &nbsp;&nbsp; ⏰ 16:30 - 18:30 (รวม 2 ชม. 0 นาที)<br>
+          🚚 รถบรรทุก 6 ล้อ &nbsp;&nbsp; 👤 สรัญรัตน์ สุตา &nbsp;&nbsp; 📞 0616758087<br>
+          📦 พาเลท
+        </div>
+        <div class="queue-actions">
+          <button class="btn-action">แจ้งกำลังเดินทาง</button>
+          <button class="btn-action cancel">ยกเลิกการจอง</button>
+        </div>
+      </div>
     </div>
   </div>
 </div>
 
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-  import { getFirestore, collection, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+<script>
+  let selectedSlotName = '';
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyDvVELT3wzRkozn1XnViVajQEBhwvzzXs",
-    authDomain: "truck-queue-app.firebaseapp.com",
-    projectId: "truck-queue-app",
-    storageBucket: "truck-queue-app.appspot.com",
-    messagingSenderId: "724204821916",
-    appId: "1:724204821916:web:c0ed4049858427833cbc59"
-  };
-
-  let db = null;
-  let selectedSlot = "";
-
-  try {
-    const app = initializeApp(firebaseConfig);
-    db = getFirestore(app);
-    listenQueues();
-  } catch (e) {
-    console.error("Firebase Init Error:", e);
+  function switchTab(tab) {
+    document.getElementById('tabDriver').classList.toggle('hidden', tab !== 'driver');
+    document.getElementById('tabStaff').classList.toggle('hidden', tab !== 'staff');
+    document.getElementById('tabBtnDriver').classList.toggle('active', tab === 'driver');
+    document.getElementById('tabBtnStaff').classList.toggle('active', tab === 'staff');
   }
 
-  window.switchTab = function(tab) {
-    const isDriver = tab === 'driver';
-    document.getElementById("tab-driver").classList.toggle("hidden", !isDriver);
-    document.getElementById("tab-staff").classList.toggle("hidden", isDriver);
-    document.getElementById("btnTabDriver").classList.toggle("active", isDriver);
-    document.getElementById("btnTabStaff").classList.toggle("active", !isDriver);
-  };
+  function selectSlot(slot, btn) {
+    selectedSlotName = slot;
+    document.querySelectorAll('.slot-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+  }
 
-  window.selectSlot = function(slot, btnElement) {
-    selectedSlot = slot;
-    document.querySelectorAll(".slot-btn").forEach(btn => {
-      if (!btn.classList.contains("taken")) {
-        btn.classList.remove("selected");
-      }
-    });
-    btnElement.classList.add("selected");
-    document.getElementById("selectedSlotText").innerText = `ช่อง ${slot}`;
-  };
-
-  window.submitBooking = async function() {
-    const statusMsg = document.getElementById("statusMsg");
-    if (!selectedSlot) {
-      statusMsg.className = "status-msg bad";
-      statusMsg.innerText = "❌ กรุณาคลิกเลือกช่อง Dock / ที่จอดในข้อ 2 ก่อนครับ";
+  function handleBooking() {
+    if (!selectedSlotName) {
+      alert('กรุณาคลิกเลือกช่อง Dock / ที่จอด ในข้อ 2 ก่อนครับ');
       return;
     }
-
-    const date = document.getElementById("f_date").value;
-    const start = document.getElementById("f_start").value;
-    const end = document.getElementById("f_end").value;
-    const plate = document.getElementById("f_plate").value.trim();
-    const truckType = document.getElementById("f_truck_type").value;
-    const driver = document.getElementById("f_driver").value.trim();
-    const phone = document.getElementById("f_phone").value.trim();
-    const company = document.getElementById("f_company").value.trim();
-    const remark = document.getElementById("f_remark").value.trim();
-
-    const btn = document.getElementById("btnSubmit");
-    btn.disabled = true;
-    btn.innerText = "กำลังบันทึกข้อมูล...";
-
-    try {
-      if (db) {
-        await addDoc(collection(db, "queues"), {
-          queueNo: "Q-" + Math.floor(1000 + Math.random() * 9000),
-          date, startTime: start, endTime: end,
-          slot: selectedSlot,
-          plate, truckType, driver, phone, company, remark,
-          status: "waiting",
-          createdAt: new Date().toISOString()
-        });
-      }
-      statusMsg.className = "status-msg ok";
-      statusMsg.innerText = "✅ บันทึกการจองสำเร็จแล้ว!";
-      document.getElementById("bookingForm").reset();
-      selectedSlot = "";
-      document.getElementById("selectedSlotText").innerText = "ยังไม่ได้เลือก";
-      document.querySelectorAll(".slot-btn").forEach(b => b.classList.remove("selected"));
-    } catch (e) {
-      statusMsg.className = "status-msg bad";
-      statusMsg.innerText = "❌ ไม่สามารถบันทึกได้: " + e.message;
-    } finally {
-      btn.disabled = false;
-      btn.innerText = "ยืนยันการจองคิว";
-    }
-  };
-
-  function listenQueues() {
-    if (!db) return;
-    onSnapshot(collection(db, "queues"), (snapshot) => {
-      const list = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      renderStaffView(list);
-    });
+    alert('บันทึกการจองคิวสำเร็จแล้ว!');
   }
 
-  function renderStaffView(list) {
-    const listEl = document.getElementById("staffBookingList");
-    if (list.length === 0) {
-      listEl.innerHTML = `<div style="text-align:center; color:var(--muted); padding:20px;">ยังไม่มีรายการจองในระบบ</div>`;
-      return;
+  // Render Table Rows
+  const slots = ['A1','A2','A3','A4','A5','A6','A7','A8','B1','B2','B3','B4','B5','B6','B7','B8'];
+  const tbody = document.getElementById('scheduleRows');
+  let html = '';
+  slots.forEach(slot => {
+    html += `<tr><td>${slot}</td>`;
+    for(let h=0; h<24; h++) {
+      html += `<td style="color:#cbd5e1;">-</td>`;
     }
-
-    listEl.innerHTML = list.map(q => `
-      <div class="booking-card">
-        <div class="booking-header">
-          <span>${q.queueNo || 'Q-XXXX'} | ทะเบียน: ${q.plate} <span class="badge-slot">${q.slot}</span></span>
-          <span class="badge-status st-waiting">รอเรียกคิว</span>
-        </div>
-        <div style="color:var(--muted); font-size:0.83rem;">
-          📅 วันที่: ${q.date} (${q.startTime} - ${q.endTime} น.)<br>
-          👤 ผู้จอง: ${q.driver} (${q.phone}) | ประเภท: ${q.truckType}<br>
-          🏢 บริษัท: ${q.company || '-'} | หมายเหตุ: ${q.remark || '-'}
-        </div>
-      </div>
-    `).join("");
-  }
+    html += `</tr>`;
+  });
+  tbody.innerHTML = html;
 </script>
 
 </body>
