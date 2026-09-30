@@ -2,207 +2,166 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>ระบบจองคิวรถบรรทุก & จัดการคลังสินค้า</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ระบบจองคิวรถบรรทุก</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
-  :root{
-    --bg:#f4f6fa; --card:#ffffff; --text:#151824; --muted:#7a8194;
-    --primary:#2f5fe0; --primary-d:#1f43ad; --primary-soft:#e8edfd;
-    --ok:#0f9d58; --ok-bg:#e5f8ee; --bad:#e0384a; --bad-bg:#fdecee; --warn:#b5750a; --warn-bg:#fdf3df;
-    --zoneA:#2f5fe0; --zoneA-bg:#e8edfd; --zoneB:#8b3ce0; --zoneB-bg:#f2e8fd; --zoneC:#e07a1f; --zoneC-bg:#fdf0e2;
-    --grad:linear-gradient(135deg,#2f5fe0,#8b3ce0);
-    --shadow:0 1px 2px rgba(20,25,40,.04), 0 6px 20px rgba(20,25,40,.06);
-    box-sizing:border-box;
+  :root {
+    --primary: #3b82f6;
+    --primary-hover: #2563eb;
+    --bg: #f3f4f6;
+    --card: #ffffff;
+    --text: #1f2937;
+    --muted: #6b7280;
+    --border: #d1d5db;
   }
-  *{box-sizing:border-box;}
-  body{margin:0;background:var(--bg);color:var(--text);font-family:"Inter","Noto Sans Thai",sans-serif;line-height:1.55;}
-  .wrap{max-width:1000px;margin:0 auto;padding:22px 16px 70px;}
-  h1{font-size:1.32rem;font-weight:800;margin:0 0 4px;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;display:inline-block;}
-  .sub{color:var(--muted);margin:0 0 18px;font-size:.87rem;}
-  .tabs{display:flex;gap:6px;margin-bottom:20px;background:var(--bg);padding:8px 0;position:sticky;top:0;z-index:5;}
-  .tab-btn{flex:1;padding:11px;border-radius:12px;border:none;background:var(--card);color:var(--muted);font-size:.85rem;font-weight:600;cursor:pointer;box-shadow:var(--shadow);}
-  .tab-btn.active{background:var(--grad);color:#fff;}
-  .card{background:var(--card);border-radius:18px;padding:20px;margin-bottom:16px;box-shadow:var(--shadow);}
-  .card h2{font-size:1rem;font-weight:700;margin:0 0 14px;}
-  .grid2{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
-  @media (max-width:560px){.grid2{grid-template-columns:1fr;}}
-  label{display:block;font-size:.78rem;color:var(--muted);margin-bottom:5px;}
-  input,select,textarea{width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:10px;background:var(--bg);color:var(--text);font-size:.9rem;}
-  .field{margin-bottom:12px;}
-  button.primary{background:var(--grad);color:#fff;border:none;border-radius:12px;padding:12px 18px;font-size:.94rem;font-weight:700;cursor:pointer;width:100%;}
-  button.ghost{background:transparent;color:var(--bad);border:1.5px solid var(--bad-bg);border-radius:9px;padding:7px 12px;font-size:.76rem;cursor:pointer;font-weight:600;}
-  button.step{background:var(--primary-soft);color:var(--primary-d);border:none;border-radius:9px;padding:7px 12px;font-size:.76rem;cursor:pointer;font-weight:700;}
-  .msg{font-size:.84rem;margin-top:10px;font-weight:600;}
-  .msg.ok{color:var(--ok);} .msg.bad{color:var(--bad);}
-  .legend{display:flex;gap:16px;font-size:.78rem;color:var(--muted);margin-bottom:14px;}
-  .legend span{display:inline-flex;align-items:center;gap:6px;}
-  .dot{width:12px;height:12px;border-radius:4px;display:inline-block;}
-  .dot.free{background:var(--ok-bg);border:1.5px solid var(--ok);}
-  .dot.taken{background:var(--bad-bg);border:1.5px solid var(--bad);}
-  .dot.sel{background:var(--primary);}
-  .zone-title{font-size:.8rem;font-weight:700;margin:16px 0 8px;color:var(--muted);padding-left:10px;border-left:4px solid var(--zoneA);}
-  .slots{display:grid;grid-template-columns:repeat(auto-fill,minmax(58px,1fr));gap:8px;}
-  .slot{aspect-ratio:1/1;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;cursor:pointer;background:var(--ok-bg);color:var(--ok);}
-  .slot.selected{background:var(--primary);color:#fff;}
-  .picked-bar{display:flex;align-items:center;justify-content:space-between;background:var(--primary-soft);border-radius:12px;padding:11px 14px;margin-top:14px;font-size:.88rem;color:var(--primary-d);font-weight:600;}
-  .booking{border-radius:14px;padding:14px 16px;margin-bottom:10px;background:var(--bg);font-size:.84rem;}
-  .booking-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;}
-  .plate{font-weight:700;font-size:.92rem;}
-  .queue-no{color:var(--muted);font-weight:600;font-size:.75rem;margin-right:6px;}
-  .slotbadge{display:inline-block;font-size:.7rem;background:var(--grad);color:#fff;border-radius:6px;padding:2px 8px;margin-left:6px;font-weight:700;}
-  .status{font-size:.7rem;padding:3px 10px;border-radius:20px;font-weight:700;}
-  .status.s-wait{background:var(--warn-bg);color:var(--warn);}
-  .status.s-load{background:var(--zoneC-bg);color:var(--zoneC);}
-  .status.s-done{background:var(--ok-bg);color:var(--ok);}
-  .status.s-cancel{background:var(--bad-bg);color:var(--bad);}
-  .meta{color:var(--muted);margin-top:8px;line-height:1.7;}
-  .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
-  .empty{color:var(--muted);font-size:.88rem;text-align:center;padding:20px 0;}
-  .badge{font-size:.72rem;color:var(--muted);}
-  .modal-card{background:var(--card);padding:24px;border-radius:20px;max-width:380px;width:100%;text-align:center;box-shadow:var(--shadow);}
-  #qrcodeCanvas{display:flex;flex-direction:column;align-items:center;gap:12px;margin:16px 0;}
-  #qrcodeCanvas img{border-radius:12px;margin:0 auto;}
-  .qrinfo{background:var(--bg);border-radius:12px;padding:12px 14px;font-size:.82rem;text-align:left;margin:12px 0;line-height:1.8;}
-  .kpi{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:2px;}
-  .kpi div{flex:1;min-width:100px;background:var(--bg);border-radius:14px;padding:12px;text-align:center;}
-  .kpi .num{font-size:1.4rem;font-weight:800;}
-  .kpi .lbl{font-size:.72rem;color:var(--muted);margin-top:2px;}
-  .filterbar{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;margin-bottom:14px;}
-  .filterbar .field{margin-bottom:0;min-width:160px;flex:1;}
+  * { box-sizing: border-box; font-family: 'Noto Sans Thai', sans-serif; }
+  body { margin: 0; padding: 20px; background-color: #e5e7eb; color: var(--text); }
+  .container { max-width: 900px; margin: 0 auto; background: var(--card); border-radius: 16px; padding: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+  
+  .header-tabs { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; border-bottom: 1px solid #e5e7eb; padding-bottom: 12px; }
+  .tab-btn { background: #4f46e5; color: white; border: none; padding: 8px 18px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 0.9rem; }
+  .tab-link { color: var(--muted); text-decoration: none; font-size: 0.85rem; font-weight: 500; }
+  
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 16px; }
+  @media (max-width: 768px) { .grid-3 { grid-template-columns: 1fr; } }
+  
+  .field { display: flex; flex-direction: column; }
+  label { font-size: 0.85rem; color: var(--muted); margin-bottom: 6px; font-weight: 500; }
+  input, select, textarea {
+    padding: 10px 14px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 0.95rem;
+    background: #f9fafb;
+    outline: none;
+    transition: 0.2s;
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--primary); background: #fff; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15); }
+  textarea { resize: vertical; min-height: 70px; }
+  
+  .btn-submit {
+    width: 100%;
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 14px;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: 0.2s;
+  }
+  .btn-submit:hover { background: var(--primary-hover); }
+  
+  .status-msg { text-align: center; margin-top: 14px; font-weight: 600; font-size: 0.9rem; }
+  .status-msg.error { color: #ef4444; }
+  .status-msg.success { color: #10b981; }
+  
+  .map-card { margin-top: 32px; padding-top: 24px; border-top: 1px solid #e5e7eb; }
+  .map-header { font-weight: 700; font-size: 1.05rem; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+  .map-location { font-size: 0.9rem; color: var(--muted); margin-bottom: 16px; }
+  
+  .coords-row { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; margin-bottom: 16px; }
+  .coord-box { background: #f3f4f6; padding: 10px 16px; border-radius: 8px; font-size: 0.9rem; flex: 1; min-width: 150px; }
+  .coord-box span { display: block; font-size: 0.75rem; color: var(--muted); }
+  
+  .btn-maps {
+    background: #2563eb;
+    color: white;
+    text-decoration: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+  }
+  .map-note { font-size: 0.82rem; color: var(--muted); margin-top: 12px; }
 </style>
 </head>
 <body>
-<div class="wrap">
-  <h1>🅿️ ระบบจองคิวรถบรรทุก & จัดการคลังสินค้า</h1>
-  <p class="sub">ฝั่งคนขับจองคิว รับ QR Gate Pass และดูสถานะ — ฝั่งเจ้าหน้าที่คลังดูตารางคิวและอัปเดตสถานะแบบเรียลไทม์</p>
 
-  <div class="tabs">
-    <button class="tab-btn active" id="tabBtnDriver" onclick="switchTab('driver')">🚚 คนขับ / บริษัทขนส่ง</button>
-    <button class="tab-btn" id="tabBtnManager" onclick="switchTab('manager')">🏭 เจ้าหน้าที่คลังสินค้า</button>
+<div class="container">
+  <div class="header-tabs">
+    <button class="tab-btn">🚚 คนขับ / บริษัทขนส่ง</button>
+    <span class="tab-link">👤 เจ้าหน้าที่คลังสินค้า</span>
   </div>
 
-  <!-- ===== DRIVER TAB ===== -->
-  <div id="tab-driver" style="display: block;">
-    <div class="card">
-      <h2>1️⃣ เลือกวันและเวลาที่ต้องการจอง</h2>
-      <div class="grid2">
-        <div class="field"><label>วันที่จอง *</label><input id="f_date" type="date"></div>
-        <div class="field"><label>เวลาเริ่มจอด *</label><input id="f_start" type="time" value="09:00"></div>
-        <div class="field"><label>เวลาสิ้นสุด *</label><input id="f_end" type="time" value="10:00"></div>
-      </div>
-    </div>
-
-    <div class="card">
-      <h2>2️⃣ เลือกช่อง Dock / ที่จอด</h2>
-      <div class="legend">
-        <span><i class="dot free"></i> ว่าง</span>
-        <span><i class="dot sel"></i> เลือกอยู่</span>
-      </div>
-
-      <div class="zone-title">โซน A - สินค้าแห้ง / อุปโภคบริโภค</div>
-      <div class="slots">
-        <div class="slot" onclick="selectSlot('A1')">A1</div>
-        <div class="slot" onclick="selectSlot('A2')">A2</div>
-        <div class="slot" onclick="selectSlot('A3')">A3</div>
-        <div class="slot" onclick="selectSlot('A4')">A4</div>
-      </div>
-
-      <div class="zone-title">โซน B - สินค้าความเย็น / อาหารสด</div>
-      <div class="slots">
-        <div class="slot" onclick="selectSlot('B1')">B1</div>
-        <div class="slot" onclick="selectSlot('B2')">B2</div>
-        <div class="slot" onclick="selectSlot('B3')">B3</div>
-        <div class="slot" onclick="selectSlot('B4')">B4</div>
-      </div>
-
-      <div class="zone-title">โซน C - วัตถุดิบขนาดใหญ่ / สินค้าอันตราย</div>
-      <div class="slots">
-        <div class="slot" onclick="selectSlot('C1')">C1</div>
-        <div class="slot" onclick="selectSlot('C2')">C2</div>
-        <div class="slot" onclick="selectSlot('C3')">C3</div>
-        <div class="slot" onclick="selectSlot('C4')">C4</div>
-      </div>
-
-      <div class="picked-bar">
-        <span>ช่องจอดที่เลือก:</span>
-        <strong id="selectedSlotText">ยังไม่ได้เลือกช่องจอด</strong>
-      </div>
-    </div>
-
-    <div class="card">
-      <h2>3️⃣ รายละเอียดผู้จอง</h2>
-      <div class="grid2">
-        <div class="field"><label>ทะเบียนรถ *</label><input id="f_plate" type="text" placeholder="เช่น 1กข-1234"></div>
-        <div class="field"><label>ชื่อคนขับ / บริษัท *</label><input id="f_driver" type="text" placeholder="ระบุชื่อหรือชื่อบริษัท"></div>
-        <div class="field"><label>เบอร์โทรศัพท์ *</label><input id="f_phone" type="tel" placeholder="08X-XXX-XXXX"></div>
+  <form id="bookingForm" onsubmit="event.preventDefault(); submitBooking();">
+    <div class="grid-3">
+      <div class="field">
+        <label>ทะเบียนรถ *</label>
+        <input type="text" id="f_plate" placeholder="เช่น 34-7543" required>
       </div>
       <div class="field">
-        <label>ประเภทสินค้า / หมายเหตุ</label>
-        <textarea id="f_remark" placeholder="ระบุประเภทสินค้า เช่น ชิ้นส่วนอะไหล่, สินค้าแช่เย็น"></textarea>
+        <label>ประเภทรถ *</label>
+        <select id="f_truck_type" required>
+          <option value="รถกระบะ">รถกระบะ</option>
+          <option value="รถบรรทุก 6 ล้อ">รถบรรทุก 6 ล้อ</option>
+          <option value="รถบรรทุก 10 ล้อ">รถบรรทุก 10 ล้อ</option>
+          <option value="รถเทรลเลอร์">รถเทรลเลอร์</option>
+        </select>
       </div>
-      <button class="primary" id="btnSubmitBooking" onclick="submitBooking()">ยืนยันการจองคิว</button>
-      <div id="bookingMsg" class="msg"></div>
-    </div>
-
-    <div class="card">
-      <h2>📋 รายการจองคิวของคุณ</h2>
-      <div id="driverBookingList">
-        <div class="empty">ยังไม่มีข้อมูลรายการจองคิว</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ===== MANAGER TAB ===== -->
-  <div id="tab-manager" style="display: none;">
-    <div class="card">
-      <h2>📊 สรุปสถานะคิววันนี้</h2>
-      <div class="kpi">
-        <div><div class="num" id="kpiTotal" style="color:var(--primary)">0</div><div class="lbl">คิวทั้งหมด</div></div>
-        <div><div class="num" id="kpiWait" style="color:var(--warn)">0</div><div class="lbl">รอเรียกคิว</div></div>
-        <div><div class="num" id="kpiLoad" style="color:var(--zoneC)">0</div><div class="lbl">กำลังโหลดสินค้า</div></div>
-        <div><div class="num" id="kpiDone" style="color:var(--ok)">0</div><div class="lbl">เสร็จสิ้น</div></div>
+      <div class="field">
+        <label>เจ้าหน้าที่คลังสินค้า</label>
+        <input type="text" id="f_staff" placeholder="ระบุชื่อเจ้าหน้าที่">
       </div>
     </div>
 
-    <div class="card">
-      <h2>🏭 จัดการรายการคิวคลังสินค้า</h2>
-      <div class="filterbar">
-        <div class="field"><label>กรองตามวันที่</label><input id="m_filter_date" type="date" onchange="renderManagerView()"></div>
-        <div class="field">
-          <label>กรองตามสถานะ</label>
-          <select id="m_filter_status" onchange="renderManagerView()">
-            <option value="all">ทุกสถานะ</option>
-            <option value="waiting">รอเรียกคิว</option>
-            <option value="loading">กำลังโหลดสินค้า</option>
-            <option value="completed">เสร็จสิ้น</option>
-          </select>
-        </div>
+    <div class="grid-3">
+      <div class="field">
+        <label>เบอร์โทรติดต่อ *</label>
+        <input type="tel" id="f_phone" placeholder="096538732" required>
       </div>
-      <div id="managerBookingList">
-        <div class="empty">ยังไม่มีคิวในระบบ</div>
+      <div class="field">
+        <label>บริษัท/หน่วยงาน</label>
+        <input type="text" id="f_company" placeholder="ไม่บังคับ">
       </div>
+      <div class="field">
+        <label>ประเภทสินค้า *</label>
+        <input type="text" id="f_product" placeholder="เช่น กระสอบทราย" required>
+      </div>
+    </div>
+
+    <div class="field" style="margin-bottom: 16px;">
+      <label>หมายเหตุ</label>
+      <textarea id="f_remark" placeholder="ขนาดรถ, เงื่อนไขพิเศษ"></textarea>
+    </div>
+
+    <button type="submit" class="btn-submit" id="btnSubmit">ยืนยันการจอง</button>
+    <div id="statusMsg" class="status-msg"></div>
+  </form>
+
+  <div class="map-card">
+    <div class="map-header">📍 แผนที่ & เส้นทางไปคลังสินค้า</div>
+    <div class="map-location">ที่ตั้งคลังสินค้า: มหาวิทยาลัยเทคโนโลยีพระจอมเกล้าพระนครเหนือ (มจพ.)</div>
+    
+    <div class="coords-row">
+      <div class="coord-box">
+        <span>ละติจูด</span>
+        <strong>13.819137</strong>
+      </div>
+      <div class="coord-box">
+        <span>ลองจิจูด</span>
+        <strong>100.514288</strong>
+      </div>
+      <a href="https://www.google.com/maps?q=13.819137,100.514288" target="_blank" class="btn-maps">🗺️ เปิดเดินทางใน Google Maps</a>
+    </div>
+
+    <div class="map-note">
+      * มีจุดพักรถรอคิวก่อนถึงประตูคลัง แนะนำให้แจ้ง "กำลังเดินทาง" เพื่อสะดวกในการเดินทาง
     </div>
   </div>
 </div>
 
-<!-- QR CODE MODAL (ใช้ Inline Style ซ่อนไว้ตั้งแต่เริ่ม) -->
-<div id="qrcodeModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.65); z-index: 9999; align-items: center; justify-content: center; padding: 16px;">
-  <div class="modal-card">
-    <h3 style="margin:0 0 8px;font-size:1.1rem;">🎫 QR Gate Pass</h3>
-    <p class="badge" style="margin-bottom:12px;">แสดง QR Code นี้แก่เจ้าหน้าที่หน้าประตูทางเข้าคลัง</p>
-    <div id="qrcodeCanvas"></div>
-    <div class="qrinfo" id="qrInfoText"></div>
-    <button class="primary" onclick="closeQRModal()">ปิดหน้าต่าง</button>
-  </div>
-</div>
-
-<!-- FIREBASE & APP LOGIC -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-  import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+  import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyDvVELT3wzRkozn1XnViVajQEBhwvzzXs",
@@ -214,232 +173,60 @@
   };
 
   let db = null;
-  let queues = [];
-  let selectedSlot = "";
-
   try {
     const app = initializeApp(firebaseConfig);
     db = getFirestore(app);
-    initRealtimeListener();
-  } catch (err) {
-    console.error("Firebase init failed:", err);
+  } catch (e) {
+    console.error("Firebase init failed:", e);
   }
 
-  document.getElementById("f_date").valueAsDate = new Date();
-  document.getElementById("m_filter_date").valueAsDate = new Date();
-
-  window.switchTab = function(tab) {
-    const isDriver = tab === 'driver';
-    document.getElementById("tab-driver").style.display = isDriver ? "block" : "none";
-    document.getElementById("tab-manager").style.display = isDriver ? "none" : "block";
-    document.getElementById("tabBtnDriver").classList.toggle("active", isDriver);
-    document.getElementById("tabBtnManager").classList.toggle("active", !isDriver);
-  };
-
-  window.selectSlot = function(slotId) {
-    selectedSlot = slotId;
-    document.querySelectorAll(".slot").forEach(el => {
-      if (el.innerText === slotId) {
-        el.classList.add("selected");
-      } else {
-        el.classList.remove("selected");
-      }
-    });
-    document.getElementById("selectedSlotText").innerText = `ช่อง ${slotId}`;
-  };
-
   window.submitBooking = async function() {
-    const date = document.getElementById("f_date").value;
-    const start = document.getElementById("f_start").value;
-    const end = document.getElementById("f_end").value;
     const plate = document.getElementById("f_plate").value.trim();
-    const driver = document.getElementById("f_driver").value.trim();
+    const truckType = document.getElementById("f_truck_type").value;
+    const staff = document.getElementById("f_staff").value.trim();
     const phone = document.getElementById("f_phone").value.trim();
+    const company = document.getElementById("f_company").value.trim();
+    const product = document.getElementById("f_product").value.trim();
     const remark = document.getElementById("f_remark").value.trim();
-    const msgEl = document.getElementById("bookingMsg");
+    const statusMsg = document.getElementById("statusMsg");
+    const btn = document.getElementById("btnSubmit");
 
-    if (!date || !start || !end || !plate || !driver || !phone) {
-      msgEl.className = "msg bad";
-      msgEl.innerText = "❌ กรุณากรอกข้อมูลที่มีเครื่องหมาย * ให้ครบถ้วน";
+    if (!plate || !phone || !product) {
+      statusMsg.className = "status-msg error";
+      statusMsg.innerText = "กรุณากรอกข้อมูลที่จำเป็นให้ครบถ้วน";
       return;
     }
 
-    if (!selectedSlot) {
-      msgEl.className = "msg bad";
-      msgEl.innerText = "❌ กรุณาเลือกช่อง Dock / ที่จอดในข้อ 2";
-      return;
-    }
-
-    const bookingData = {
-      queueNo: "Q-" + Math.floor(1000 + Math.random() * 9000),
-      date, startTime: start, endTime: end,
-      slot: selectedSlot, plate, driver, phone, remark,
-      status: "waiting",
-      createdAt: new Date().toISOString()
-    };
+    btn.disabled = true;
+    btn.innerText = "กำลังบันทึกข้อมูล...";
+    statusMsg.innerText = "";
 
     try {
       if (db) {
-        await addDoc(collection(db, "queues"), bookingData);
-      } else {
-        queues.push({ id: Date.now().toString(), ...bookingData });
-        renderViews();
+        await addDoc(collection(db, "queues"), {
+          plate,
+          truckType,
+          staff,
+          phone,
+          company,
+          product,
+          remark,
+          createdAt: new Date().toISOString()
+        });
       }
-      msgEl.className = "msg ok";
-      msgEl.innerText = "✅ จองคิวสำเร็จแล้ว!";
-      clearForm();
-    } catch (e) {
-      msgEl.className = "msg bad";
-      msgEl.innerText = "❌ ไม่สามารถบันทึกข้อมูลได้: " + e.message;
+      statusMsg.className = "status-msg success";
+      statusMsg.innerText = "✅ บันทึกข้อมูลการจองสำเร็จแล้ว!";
+      document.getElementById("bookingForm").reset();
+    } catch (err) {
+      console.error(err);
+      statusMsg.className = "status-msg error";
+      statusMsg.innerText = "❌ เกิดข้อผิดพลาดในการเชื่อมต่อฐานข้อมูล: " + err.message;
+    } finally {
+      btn.disabled = false;
+      btn.innerText = "ยืนยันการจอง";
     }
   };
-
-  function clearForm() {
-    document.getElementById("f_plate").value = "";
-    document.getElementById("f_driver").value = "";
-    document.getElementById("f_phone").value = "";
-    document.getElementById("f_remark").value = "";
-    selectedSlot = "";
-    document.getElementById("selectedSlotText").innerText = "ยังไม่ได้เลือกช่องจอด";
-    document.querySelectorAll(".slot").forEach(el => el.classList.remove("selected"));
-  }
-
-  function initRealtimeListener() {
-    if (!db) return;
-    try {
-      const colRef = collection(db, "queues");
-      onSnapshot(colRef, (snapshot) => {
-        queues = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        queues.sort((a, b) => (b.createdAt || "").localeCompare(a.createdAt || ""));
-        renderViews();
-      });
-    } catch(e) {
-      console.error("Firestore listener failed:", e);
-    }
-  }
-
-  function renderViews() {
-    renderDriverView();
-    renderManagerView();
-  }
-
-  function renderDriverView() {
-    const listEl = document.getElementById("driverBookingList");
-    if (queues.length === 0) {
-      listEl.innerHTML = `<div class="empty">ยังไม่มีข้อมูลรายการจองคิว</div>`;
-      return;
-    }
-
-    listEl.innerHTML = queues.map(q => `
-      <div class="booking">
-        <div class="booking-top">
-          <div>
-            <span class="queue-no">${q.queueNo}</span>
-            <span class="plate">${q.plate}</span>
-            <span class="slotbadge">${q.slot}</span>
-          </div>
-          <span class="status ${getStatusClass(q.status)}">${getStatusText(q.status)}</span>
-        </div>
-        <div class="meta">
-          📅 วันที่: ${q.date} (${q.startTime} - ${q.endTime} น.)<br>
-          👤 คนขับ/บริษัท: ${q.driver} | 📞 ${q.phone}
-        </div>
-        <div class="actions">
-          <button class="step" onclick="showQR('${q.queueNo}', '${q.plate}', '${q.slot}', '${q.date}', '${q.startTime}')">🎫 สแกน QR Pass</button>
-        </div>
-      </div>
-    `).join("");
-  }
-
-  window.renderManagerView = function() {
-    const filterDate = document.getElementById("m_filter_date").value;
-    const filterStatus = document.getElementById("m_filter_status").value;
-
-    let filtered = queues;
-    if (filterDate) filtered = filtered.filter(q => q.date === filterDate);
-    if (filterStatus !== "all") filtered = filtered.filter(q => q.status === filterStatus);
-
-    document.getElementById("kpiTotal").innerText = filtered.length;
-    document.getElementById("kpiWait").innerText = filtered.filter(q => q.status === 'waiting').length;
-    document.getElementById("kpiLoad").innerText = filtered.filter(q => q.status === 'loading').length;
-    document.getElementById("kpiDone").innerText = filtered.filter(q => q.status === 'completed').length;
-
-    const listEl = document.getElementById("managerBookingList");
-    if (filtered.length === 0) {
-      listEl.innerHTML = `<div class="empty">ไม่พบคิวในเงื่อนไขที่เลือก</div>`;
-      return;
-    }
-
-    listEl.innerHTML = filtered.map(q => `
-      <div class="booking">
-        <div class="booking-top">
-          <div>
-            <span class="queue-no">${q.queueNo}</span>
-            <span class="plate">${q.plate}</span>
-            <span class="slotbadge">${q.slot}</span>
-          </div>
-          <span class="status ${getStatusClass(q.status)}">${getStatusText(q.status)}</span>
-        </div>
-        <div class="meta">
-          📅 เวลา: ${q.startTime} - ${q.endTime} น. | 👤 ${q.driver} (${q.phone})<br>
-          📝 สินค้า/หมายเหตุ: ${q.remark || '-'}
-        </div>
-        <div class="actions">
-          ${q.status === 'waiting' ? `<button class="step" onclick="updateStatus('${q.id}', 'loading')">📢 เรียกเข้า Dock</button>` : ''}
-          ${q.status === 'loading' ? `<button class="step" style="background:var(--ok-bg);color:var(--ok)" onclick="updateStatus('${q.id}', 'completed')">✅ งานเสร็จสิ้น</button>` : ''}
-          ${q.status !== 'completed' && q.status !== 'cancelled' ? `<button class="ghost" onclick="updateStatus('${q.id}', 'cancelled')">❌ ยกเลิกคิว</button>` : ''}
-        </div>
-      </div>
-    `).join("");
-  };
-
-  window.updateStatus = async function(id, newStatus) {
-    if (db) {
-      await updateDoc(doc(db, "queues", id), { status: newStatus });
-    } else {
-      const item = queues.find(q => q.id === id);
-      if (item) item.status = newStatus;
-      renderViews();
-    }
-  };
-
-  window.showQR = function(queueNo, plate, slot, date, time) {
-    const qrDiv = document.getElementById("qrcodeCanvas");
-    qrDiv.innerHTML = "";
-    new QRCode(qrDiv, {
-      text: `PASS:${queueNo}|${plate}|${slot}|${date}`,
-      width: 160, height: 160
-    });
-    document.getElementById("qrInfoText").innerHTML = `
-      <strong>คิวที่:</strong> ${queueNo}<br>
-      <strong>ทะเบียนรถ:</strong> ${plate}<br>
-      <strong>ช่องจอด:</strong> ${slot}<br>
-      <strong>นัดหมาย:</strong> ${date} เวลา ${time} น.
-    `;
-    document.getElementById("qrcodeModal").style.display = "flex";
-  };
-
-  window.closeQRModal = function() {
-    document.getElementById("qrcodeModal").style.display = "none";
-  };
-
-  function getStatusClass(status) {
-    switch (status) {
-      case 'waiting': return 's-wait';
-      case 'loading': return 's-load';
-      case 'completed': return 's-done';
-      default: return 's-cancel';
-    }
-  }
-
-  function getStatusText(status) {
-    switch (status) {
-      case 'waiting': return '⏳ รอเรียกคิว';
-      case 'loading': return '🚚 กำลังโหลดสินค้า';
-      case 'completed': return '✅ เสร็จสิ้น';
-      default: return '❌ ยกเลิก';
-    }
-  }
 </script>
+
 </body>
 </html>
