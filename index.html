@@ -10,6 +10,7 @@
 <!-- Firebase Firestore SDKs (Compat Build) -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 
 <style>
   :root { --primary: #4f46e5; --bg-color: #f3f4f6; --card-bg: #ffffff; --text-color: #1f2937; --border-color: #e5e7eb; }
@@ -65,11 +66,47 @@
   .qr-box img { width: 180px; height: 180px; }
   .loading-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.8); display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:1.2rem; z-index:1000; }
   .hidden { display: none !important; }
+  .user-bar { display: flex; align-items: center; gap: 10px; margin-top: 10px; font-size: 0.85rem; color: #475569; flex-wrap: wrap; }
+  .role-badge { background: #eef2ff; color: #4338ca; border-radius: 999px; padding: 2px 10px; font-weight: 700; font-size: 0.78rem; }
+  .login-card { text-align: left; }
+  .login-card h2 { margin: 0 0 4px; font-size: 1.2rem; }
+  .login-card .sub { margin: 0 0 18px; font-size: 0.85rem; color: #6b7280; }
+  .login-error { color: #dc2626; font-size: 0.85rem; min-height: 1.2em; margin: 8px 0 0; }
+  .queue-card.cancelled { opacity: 0.6; }
+  .status-pill { font-size: 0.78rem; font-weight: 700; padding: 2px 10px; border-radius: 999px; background: #dbeafe; color: #1d4ed8; }
+  .status-pill.arrived { background: #fef9c3; color: #a16207; }
+  .status-pill.done { background: #dcfce7; color: #15803d; }
+  .status-pill.cancelled { background: #e5e7eb; color: #4b5563; }
+  .btn-link { background: none; border: none; color: var(--primary); font-weight: 600; cursor: pointer; padding: 0; font-size: 0.85rem; }
 </style>
 </head>
 <body>
 
 <div id="loading" class="loading-overlay">⏳ กำลังเชื่อมต่อ Cloud Firestore...</div>
+
+<!-- LOGIN: เลือกบทบาท -->
+<div id="loginPage" class="modal-overlay hidden">
+  <div class="modal-card login-card">
+    <h2>เข้าใช้งานในฐานะ</h2>
+    <p class="sub">เลือกประเภทผู้ใช้เพื่อเริ่มต้น</p>
+
+    <div id="roleChoice">
+      <button type="button" class="btn-submit" style="margin-top:0" onclick="enterAsDriver()">🚚 คนขับ / บริษัทขนส่ง</button>
+      <button type="button" class="btn-submit" style="margin-top:12px;background:#0f172a" onclick="showStaffLogin()">🏭 เจ้าหน้าที่คลังสินค้า</button>
+    </div>
+
+    <form id="staffForm" class="hidden" onsubmit="event.preventDefault(); enterAsStaff();">
+      <div class="field-group" style="margin-bottom:4px">
+        <label>รหัสผ่านเจ้าหน้าที่</label>
+        <input type="password" id="l_pass" inputmode="numeric" autocomplete="off" required>
+      </div>
+      <p class="login-error" id="l_error"></p>
+      <button type="submit" class="btn-submit" style="margin-top:10px;background:#0f172a">เข้าสู่ระบบ</button>
+      <p style="text-align:center;margin:14px 0 0"><button type="button" class="btn-link" onclick="backToRoleChoice()">← กลับไปเลือกประเภทผู้ใช้</button></p>
+    </form>
+    <p class="login-error" id="l_error_driver" style="text-align:center"></p>
+  </div>
+</div>
 
 <div class="container">
   <div class="app-header">
@@ -78,10 +115,15 @@
       <h1 class="app-title">ระบบจองคิวรถบรรทุก & จัดการคลังสินค้า</h1>
     </div>
     <p class="app-subtitle">⚡ เชื่อมต่อ Cloud Firestore เรียลไทม์</p>
+    <div class="user-bar hidden" id="userBar">
+      <span class="role-badge" id="userRole"></span>
+      <button type="button" class="btn-action" onclick="auth.signOut()">เปลี่ยนผู้ใช้</button>
+    </div>
   </div>
 
   <div class="tabs-nav">
     <button class="tab-btn active" id="tabBtnDriver" onclick="switchTab('driver')">🚚 คนขับ / บริษัทขนส่ง</button>
+    <button class="tab-btn" id="tabBtnMine" onclick="switchTab('mine')">📋 คิวของฉัน</button>
     <button class="tab-btn" id="tabBtnStaff" onclick="switchTab('staff')">🏭 เจ้าหน้าที่คลังสินค้า</button>
   </div>
 
@@ -146,6 +188,13 @@
       </div>
       <button type="submit" class="btn-submit">ยืนยันการจองคิว (ส่งไปยัง Firestore)</button>
     </form>
+  </div>
+
+  <!-- TAB 3: MY QUEUES -->
+  <div id="tabMine" class="hidden">
+    <div class="sec-title" style="margin-top:0">คิวที่ฉันจองไว้</div>
+    <p class="app-subtitle" style="margin-bottom:8px">แสดงคิวที่จองจากเครื่องและเบราว์เซอร์นี้ ยกเลิกได้เฉพาะคิวที่ยังอยู่สถานะ "รอ"</p>
+    <div id="myQueueContainer"></div>
   </div>
 
   <!-- TAB 2: STAFF -->
@@ -215,18 +264,110 @@
   let selectedSlotName = '';
   let bookings = [];
 
-  // Realtime Listener ดึงข้อมูลจากคอลเลกชัน 'queues'
-  db.collection('queues').onSnapshot((snapshot) => {
-    bookings = snapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    }));
-    updateAllViews();
-    showLoading(false);
-  }, (error) => {
-    console.error("Firestore Error: ", error);
-    alert("ไม่สามารถเชื่อมต่อ Cloud Firestore ได้: " + error.message);
-    showLoading(false);
+  // ตั้งวันที่เริ่มต้นเป็นวันนี้ (เดิมตั้งตายตัวเป็น 2026-09-30)
+  (function setDefaultDates() {
+    const d = new Date();
+    const today = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+    document.getElementById('f_date').value = today;
+    document.getElementById('staffViewDate').value = today;
+  })();
+
+  // ---------- Auth ----------
+  // คนขับ = เข้าแบบไม่ระบุตัวตน (Anonymous) / เจ้าหน้าที่ = บัญชีกลางใน Firebase ที่ต้องกรอกรหัสผ่าน
+  // รหัสผ่านไม่ได้อยู่ในโค้ดนี้ Firebase เป็นผู้ตรวจ
+  const STAFF_EMAIL = 'staff@truckqueue.app';
+  const auth = firebase.auth();
+  let currentUser = null;
+  let currentRole = null;     // 'driver' | 'staff'
+  let unsubscribeQueues = null;
+
+  function escapeHtml(v) {
+    return String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  function showStaffLogin() {
+    document.getElementById('roleChoice').classList.add('hidden');
+    document.getElementById('staffForm').classList.remove('hidden');
+    document.getElementById('l_error_driver').innerText = '';
+    document.getElementById('l_pass').focus();
+  }
+
+  function backToRoleChoice() {
+    document.getElementById('staffForm').classList.add('hidden');
+    document.getElementById('roleChoice').classList.remove('hidden');
+    document.getElementById('l_error').innerText = '';
+    document.getElementById('l_pass').value = '';
+  }
+
+  async function enterAsDriver() {
+    showLoading(true);
+    try {
+      await auth.signInAnonymously();
+    } catch (err) {
+      document.getElementById('l_error_driver').innerText = 'เข้าใช้งานไม่สำเร็จ: ' + err.message;
+      showLoading(false);
+    }
+  }
+
+  async function enterAsStaff() {
+    const pass = document.getElementById('l_pass').value;
+    const errBox = document.getElementById('l_error');
+    errBox.innerText = '';
+    showLoading(true);
+    try {
+      await auth.signInWithEmailAndPassword(STAFF_EMAIL, pass);
+    } catch (err) {
+      const wrong = ['auth/wrong-password', 'auth/invalid-credential', 'auth/user-not-found', 'auth/invalid-login-credentials'];
+      errBox.innerText = wrong.includes(err.code) ? 'รหัสผ่านไม่ถูกต้อง'
+        : err.code === 'auth/too-many-requests' ? 'ลองหลายครั้งเกินไป กรุณารอสักครู่แล้วลองใหม่'
+        : 'เข้าสู่ระบบไม่สำเร็จ: ' + err.message;
+      showLoading(false);
+    }
+  }
+
+  function stopListening() {
+    if (unsubscribeQueues) { unsubscribeQueues(); unsubscribeQueues = null; }
+    bookings = [];
+  }
+
+  // Realtime Listener ดึงข้อมูลจากคอลเลกชัน 'queues' (เริ่มหลังล็อกอินเท่านั้น)
+  function startListening() {
+    stopListening();
+    unsubscribeQueues = db.collection('queues').onSnapshot((snapshot) => {
+      bookings = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      updateAllViews();
+      showLoading(false);
+    }, (error) => {
+      console.error("Firestore Error: ", error);
+      alert("ไม่สามารถเชื่อมต่อ Cloud Firestore ได้: " + error.message);
+      showLoading(false);
+    });
+  }
+
+  auth.onAuthStateChanged((user) => {
+    currentUser = user;
+    if (!user) {
+      currentRole = null;
+      stopListening();
+      document.getElementById('userBar').classList.add('hidden');
+      backToRoleChoice();
+      document.getElementById('loginPage').classList.remove('hidden');
+      showLoading(false);
+      return;
+    }
+    if (user.isAnonymous) currentRole = 'driver';
+    else if (user.email === STAFF_EMAIL) currentRole = 'staff';
+    else { auth.signOut(); return; }
+
+    document.getElementById('loginPage').classList.add('hidden');
+    document.getElementById('userRole').innerText = currentRole === 'staff' ? 'เจ้าหน้าที่คลัง' : 'คนขับ';
+    document.getElementById('userBar').classList.remove('hidden');
+
+    // คนขับเห็นเฉพาะฝั่งคนขับ / เจ้าหน้าที่เห็นทั้งสองฝั่ง
+    document.getElementById('tabBtnStaff').classList.toggle('hidden', currentRole !== 'staff');
+    document.getElementById('tabBtnMine').classList.toggle('hidden', currentRole !== 'driver');
+    switchTab(currentRole === 'staff' ? 'staff' : 'driver');
+    startListening();
   });
 
   function showLoading(show) {
@@ -234,9 +375,13 @@
   }
 
   function switchTab(tab) {
+    if (tab === 'staff' && currentRole !== 'staff') tab = 'driver';
+    if (tab === 'mine' && currentRole !== 'driver') tab = currentRole === 'staff' ? 'staff' : 'driver';
     document.getElementById('tabDriver').classList.toggle('hidden', tab !== 'driver');
+    document.getElementById('tabMine').classList.toggle('hidden', tab !== 'mine');
     document.getElementById('tabStaff').classList.toggle('hidden', tab !== 'staff');
     document.getElementById('tabBtnDriver').classList.toggle('active', tab === 'driver');
+    document.getElementById('tabBtnMine').classList.toggle('active', tab === 'mine');
     document.getElementById('tabBtnStaff').classList.toggle('active', tab === 'staff');
   }
 
@@ -307,7 +452,9 @@
       truckType: document.getElementById('f_truck_type').value,
       driver: document.getElementById('f_driver').value.trim(),
       phone: document.getElementById('f_phone').value.trim(),
+      company: document.getElementById('f_company').value.trim(),
       remark: document.getElementById('f_remark').value.trim() || '-',
+      uid: currentUser.uid,
       status: 'waiting',
       createdAt: new Date().toISOString()
     };
@@ -336,6 +483,7 @@
   }
 
   async function changeStatus(docId, newStatus) {
+    if (currentRole !== 'staff') { alert('เฉพาะเจ้าหน้าที่คลังเท่านั้นที่เปลี่ยนสถานะได้'); return; }
     showLoading(true);
     try {
       await db.collection('queues').doc(docId).update({ status: newStatus });
@@ -377,7 +525,7 @@
           let bgColor = '#bfdbfe';
           if (booking.status === 'arrived') bgColor = '#fef08a';
           if (booking.status === 'done') bgColor = '#bbf7d0';
-          html += `<td style="background:${bgColor}; font-weight:bold;">${booking.plate}</td>`;
+          html += `<td style="background:${bgColor}; font-weight:bold;">${escapeHtml(booking.plate)}</td>`;
         } else {
           html += `<td style="color:#cbd5e1;">-</td>`;
         }
@@ -411,10 +559,10 @@
       html += `
         <div class="queue-card">
           <div class="queue-card-head">
-            <div class="queue-card-title">#${idx + 1} ${b.plate} (ช่อง ${b.slot})</div>
-            <div>สถานะ: ${b.status}</div>
+            <div class="queue-card-title">#${idx + 1} ${escapeHtml(b.plate)} (ช่อง ${escapeHtml(b.slot)})</div>
+            <div>สถานะ: ${escapeHtml(b.status)}</div>
           </div>
-          <div class="queue-card-details">📅 ${b.date} (${b.startTime} - ${b.endTime}) | 👤 ${b.driver} (${b.phone})</div>
+          <div class="queue-card-details">📅 ${escapeHtml(b.date)} (${escapeHtml(b.startTime)} - ${escapeHtml(b.endTime)}) | 👤 ${escapeHtml(b.driver)} (${escapeHtml(b.phone)})${b.company ? ' | 🏢 ' + escapeHtml(b.company) : ''}</div>
           <div class="queue-actions">${actionBtns}</div>
         </div>
       `;
@@ -422,7 +570,51 @@
     container.innerHTML = html;
   }
 
+  const STATUS_TH = { waiting: 'รอ/กำลังเดินทาง', arrived: 'ถึงคลังแล้ว', done: 'เสร็จสิ้น', cancelled: 'ยกเลิกแล้ว' };
+
+  async function cancelMyQueue(docId) {
+    if (!currentUser) return;
+    if (!confirm('ยืนยันยกเลิกคิวนี้ใช่หรือไม่?')) return;
+    showLoading(true);
+    try {
+      await db.collection('queues').doc(docId).update({ status: 'cancelled' });
+    } catch (err) {
+      alert('ยกเลิกคิวไม่สำเร็จ: ' + err.message);
+    } finally {
+      showLoading(false);
+    }
+  }
+
+  function renderMyQueues() {
+    const box = document.getElementById('myQueueContainer');
+    if (!currentUser || currentRole !== 'driver') { box.innerHTML = ''; return; }
+    const mine = bookings
+      .filter(b => b.uid === currentUser.uid)
+      .sort((x, y) => String(y.createdAt || '').localeCompare(String(x.createdAt || '')));
+
+    if (mine.length === 0) {
+      box.innerHTML = '<div style="text-align:center; padding:24px; color:#94a3b8;">ยังไม่มีคิวที่จองจากเครื่องนี้<br>ไปที่แท็บ "คนขับ / บริษัทขนส่ง" เพื่อจองคิว</div>';
+      return;
+    }
+
+    box.innerHTML = mine.map(b => {
+      const cancelBtn = b.status === 'waiting'
+        ? `<button class="btn-action" style="color:red" onclick="cancelMyQueue('${escapeHtml(b.id)}')">ยกเลิกคิวนี้</button>`
+        : '';
+      return `
+        <div class="queue-card ${b.status === 'cancelled' ? 'cancelled' : ''}">
+          <div class="queue-card-head">
+            <div class="queue-card-title">${escapeHtml(b.queueNo)} · ${escapeHtml(b.plate)} (ช่อง ${escapeHtml(b.slot)})</div>
+            <span class="status-pill ${escapeHtml(b.status)}">${escapeHtml(STATUS_TH[b.status] || b.status)}</span>
+          </div>
+          <div class="queue-card-details">📅 ${escapeHtml(b.date)} (${escapeHtml(b.startTime)} - ${escapeHtml(b.endTime)})<br>🚚 ${escapeHtml(b.truckType)} | 📝 ${escapeHtml(b.remark)}</div>
+          ${cancelBtn ? `<div class="queue-actions">${cancelBtn}</div>` : ''}
+        </div>`;
+    }).join('');
+  }
+
   function updateAllViews() {
+    renderMyQueues();
     updateSlotsAvailability();
     renderStats();
     renderScheduleTable();
