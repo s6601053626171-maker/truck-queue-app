@@ -13,7 +13,7 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <!-- QR: สร้าง QR ในเครื่อง (ไม่พึ่งเว็บภายนอก) และอ่าน QR จากกล้อง -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
 
 <style>
   :root { --primary: #4f46e5; --bg-color: #f3f4f6; --card-bg: #ffffff; --text-color: #1f2937; --border-color: #e5e7eb; }
@@ -205,7 +205,12 @@
   <div id="tabStaff" class="hidden">
     <div class="table-card" style="margin-top:0; margin-bottom:22px;">
       <div style="font-weight:700; margin-bottom:10px;">📷 สแกน QR ตรวจคิวรถ</div>
-      <button type="button" class="btn-submit" style="margin:0; width:auto; padding:10px 22px;" onclick="startScan()">เปิดกล้องสแกน</button>
+      <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <button type="button" class="btn-submit" style="margin:0; width:auto; padding:10px 22px;" onclick="startScan()">เปิดกล้องสแกน</button>
+        <label class="btn-action" style="margin:0; padding:10px 16px; cursor:pointer;">📸 ถ่ายรูป QR
+          <input type="file" accept="image/*" capture="environment" class="hidden" onchange="scanFromFile(this)">
+        </label>
+      </div>
       <form style="margin-top:12px; display:flex; gap:8px;" onsubmit="event.preventDefault(); const i=document.getElementById('scanInput'); handleScan(i.value); i.value='';">
         <input id="scanInput" placeholder="หรือพิมพ์เลขคิว (เช่น Q-1234) / ใช้เครื่องสแกนยิงที่ช่องนี้" autocomplete="off">
         <button type="submit" class="btn-action">ค้นหา</button>
@@ -529,7 +534,7 @@
   }
 
   // ---------- สแกน QR (เจ้าหน้าที่) ----------
-  let scanStream = null, scanRaf = null, scannedId = null, pendingPass = new URLSearchParams(location.search).get('pass');
+  let scanStream = null, scanTimer = null, scannedId = null, pendingPass = new URLSearchParams(location.search).get('pass');
 
   function resolveScan(text) {
     text = String(text || '').trim();
@@ -595,42 +600,91 @@
     renderScanResult();
   }
 
+  const scanCanvas = document.createElement('canvas');
+  const scanCtx = scanCanvas.getContext('2d', { willReadFrequently: true });
+  let bdOk = 'BarcodeDetector' in window, bd = null;
+
+  // อ่าน QR จากวิดีโอ/รูป: ใช้ BarcodeDetector ของเบราว์เซอร์ก่อน (ถ้ามี) แล้วสำรองด้วย jsQR
+  async function readQr(el) {
+    if (bdOk) {
+      try {
+        bd = bd || new BarcodeDetector({ formats: ['qr_code'] });
+        const r = await bd.detect(el);
+        if (r.length) return r[0].rawValue;
+      } catch (e) { bdOk = false; }
+    }
+    if (typeof jsQR === 'function') {
+      const w = el.videoWidth || el.naturalWidth, h = el.videoHeight || el.naturalHeight;
+      if (!w || !h) return null;
+      const sc = Math.min(1, 1000 / Math.max(w, h));
+      scanCanvas.width = Math.round(w * sc);
+      scanCanvas.height = Math.round(h * sc);
+      scanCtx.drawImage(el, 0, 0, scanCanvas.width, scanCanvas.height);
+      const img = scanCtx.getImageData(0, 0, scanCanvas.width, scanCanvas.height);
+      const c = jsQR(img.data, img.width, img.height, { inversionAttempts: 'attemptBoth' });
+      return c ? c.data : null;
+    }
+    return null;
+  }
+
   async function startScan() {
-    if (typeof jsQR !== 'function') { alert('โหลดตัวอ่าน QR ไม่สำเร็จ ตรวจสอบอินเทอร์เน็ตแล้วรีเฟรชหน้า'); return; }
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      alert('เบราว์เซอร์นี้เปิดกล้องสแกนไม่ได้ (เช่น เปิดในแอป LINE/Facebook)\nให้กด "📸 ถ่ายรูป QR" แทน หรือเปิดลิงก์ใน Chrome/Safari');
+      return;
+    }
+    if (!bdOk && typeof jsQR !== 'function') {
+      alert('โหลดตัวอ่าน QR ไม่สำเร็จ ตรวจสอบอินเทอร์เน็ตแล้วรีเฟรชหน้า');
+      return;
+    }
+    stopScan();
     try {
-      scanStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' } }, audio: false });
+      scanStream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } },
+        audio: false
+      });
     } catch (e) {
-      alert('เปิดกล้องไม่ได้: ' + e.message + '\n(ต้องกดอนุญาตกล้อง และเปิดผ่านเว็บ https)');
+      alert('เปิดกล้องไม่ได้: ' + e.message + '\nให้กดอนุญาตกล้อง หรือใช้ปุ่ม "📸 ถ่ายรูป QR" แทน');
       return;
     }
     const v = document.getElementById('scanVideo');
+    document.getElementById('scanBox').classList.remove('hidden');  // ต้องแสดงก่อน play() ไม่งั้น iOS ไม่ส่งภาพ
     v.srcObject = scanStream;
-    await v.play();
-    document.getElementById('scanBox').classList.remove('hidden');
-    const cv = document.createElement('canvas');
-    const ctx = cv.getContext('2d', { willReadFrequently: true });
-    const tick = () => {
+    try { await v.play(); } catch (e) {}
+    const loop = async () => {
       if (!scanStream) return;
-      if (v.readyState === v.HAVE_ENOUGH_DATA && v.videoWidth) {
-        const sc = Math.min(1, 640 / v.videoWidth);
-        cv.width = Math.round(v.videoWidth * sc);
-        cv.height = Math.round(v.videoHeight * sc);
-        ctx.drawImage(v, 0, 0, cv.width, cv.height);
-        const img = ctx.getImageData(0, 0, cv.width, cv.height);
-        const code = jsQR(img.data, img.width, img.height, { inversionAttempts: 'dontInvert' });
-        if (code && code.data) { stopScan(); handleScan(code.data); return; }
+      if (v.readyState >= 2 && v.videoWidth) {
+        const text = await readQr(v);
+        if (!scanStream) return;
+        if (text) { stopScan(); handleScan(text); return; }
       }
-      scanRaf = requestAnimationFrame(tick);
+      scanTimer = setTimeout(loop, 150);
     };
-    tick();
+    loop();
   }
 
   function stopScan() {
-    if (scanRaf) cancelAnimationFrame(scanRaf);
-    scanRaf = null;
+    if (scanTimer) clearTimeout(scanTimer);
+    scanTimer = null;
     if (scanStream) scanStream.getTracks().forEach(t => t.stop());
     scanStream = null;
     document.getElementById('scanBox').classList.add('hidden');
+  }
+
+  // สแกนจากรูปที่ถ่าย/เลือก (ใช้เมื่อกล้องสดใช้ไม่ได้)
+  function scanFromFile(input) {
+    const f = input.files && input.files[0];
+    input.value = '';
+    if (!f) return;
+    const img = new Image();
+    img.onload = async () => {
+      const text = await readQr(img);
+      URL.revokeObjectURL(img.src);
+      if (text) handleScan(text);
+      else document.getElementById('scanResult').innerHTML =
+        '<div class="scan-banner" style="background:#fee2e2;color:#b91c1c;">❌ อ่าน QR จากรูปไม่ได้ ลองถ่ายใกล้ขึ้น/นิ่งขึ้น หรือพิมพ์เลขคิวแทน</div>';
+    };
+    img.onerror = () => alert('เปิดรูปไม่สำเร็จ');
+    img.src = URL.createObjectURL(f);
   }
 
   function closeQrModal() {
