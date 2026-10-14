@@ -11,6 +11,9 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<!-- QR: สร้าง QR ในเครื่อง (ไม่พึ่งเว็บภายนอก) และอ่าน QR จากกล้อง -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js"></script>
 
 <style>
   :root { --primary: #4f46e5; --bg-color: #f3f4f6; --card-bg: #ffffff; --text-color: #1f2937; --border-color: #e5e7eb; }
@@ -63,7 +66,8 @@
   .btn-action { padding: 6px 14px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff; font-size: 0.8rem; font-weight: 600; cursor: pointer; }
   .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.65); display: flex; align-items: center; justify-content: center; z-index: 999; padding: 16px; }
   .modal-card { background: #ffffff; border-radius: 20px; max-width: 400px; width: 100%; padding: 28px 24px; text-align: center; }
-  .qr-box img { width: 180px; height: 180px; }
+  .qr-box img { width: 220px; height: 220px; image-rendering: pixelated; }
+  .scan-banner { border-radius: 10px; padding: 10px 14px; font-weight: 700; margin-bottom: 10px; }
   .loading-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.8); display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:1.2rem; z-index:1000; }
   .hidden { display: none !important; }
   .user-bar { display: flex; align-items: center; gap: 10px; margin-top: 10px; font-size: 0.85rem; color: #475569; flex-wrap: wrap; }
@@ -199,6 +203,20 @@
 
   <!-- TAB 2: STAFF -->
   <div id="tabStaff" class="hidden">
+    <div class="table-card" style="margin-top:0; margin-bottom:22px;">
+      <div style="font-weight:700; margin-bottom:10px;">📷 สแกน QR ตรวจคิวรถ</div>
+      <button type="button" class="btn-submit" style="margin:0; width:auto; padding:10px 22px;" onclick="startScan()">เปิดกล้องสแกน</button>
+      <form style="margin-top:12px; display:flex; gap:8px;" onsubmit="event.preventDefault(); const i=document.getElementById('scanInput'); handleScan(i.value); i.value='';">
+        <input id="scanInput" placeholder="หรือพิมพ์เลขคิว (เช่น Q-1234) / ใช้เครื่องสแกนยิงที่ช่องนี้" autocomplete="off">
+        <button type="submit" class="btn-action">ค้นหา</button>
+      </form>
+      <div id="scanBox" class="hidden" style="margin-top:12px;">
+        <video id="scanVideo" playsinline muted style="width:100%; max-width:420px; border-radius:10px; background:#000;"></video>
+        <div><button type="button" class="btn-action" style="margin-top:8px;" onclick="stopScan()">ปิดกล้อง</button></div>
+      </div>
+      <div id="scanResult" style="margin-top:14px;"></div>
+    </div>
+
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
       <div style="font-weight: 700;">ภาพรวมคิวในระบบ</div>
       <input type="date" id="staffViewDate" value="2026-09-30" style="width: auto;" onchange="renderScheduleTable()">
@@ -240,7 +258,7 @@
   <div class="modal-card">
     <h2 style="margin: 0;" id="passQueueNo">Q-1001</h2>
     <div class="qr-box" style="margin: 15px 0;"><img id="qrImg" src="" alt="QR Pass"></div>
-    <p id="passInfoText" style="font-size:0.88rem; color:#475569;"></p>
+    <p id="passInfoText" style="font-size:0.88rem; color:#475569; white-space:pre-line;"></p>
     <button type="button" class="btn-submit" onclick="closeQrModal()">ตกลง</button>
   </div>
 </div>
@@ -349,6 +367,8 @@
     if (!user) {
       currentRole = null;
       stopListening();
+      stopScan();
+      scannedId = null;
       document.getElementById('userBar').classList.add('hidden');
       backToRoleChoice();
       document.getElementById('loginPage').classList.remove('hidden');
@@ -461,13 +481,8 @@
 
     showLoading(true);
     try {
-      await db.collection('queues').add(newBooking);
-
-      const qrText = `PASS|${queueNo}|PLATE:${newBooking.plate}|SLOT:${selectedSlotName}`;
-      document.getElementById('passQueueNo').innerText = queueNo;
-      document.getElementById('qrImg').src = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(qrText)}`;
-      document.getElementById('passInfoText').innerText = `ทะเบียน: ${newBooking.plate} | ช่อง: ${selectedSlotName} | เวลา: ${start}-${end}`;
-      document.getElementById('qrModal').classList.remove('hidden');
+      const ref = await db.collection('queues').add(newBooking);
+      showQrPass({ ...newBooking, id: ref.id });
 
       selectedSlotName = '';
       document.querySelectorAll('.slot-btn').forEach(b => b.classList.remove('selected'));
@@ -476,6 +491,146 @@
     } finally {
       showLoading(false);
     }
+  }
+
+  // ---------- QR ----------
+  function zoneLabel(slot) {
+    const z = String(slot || '').charAt(0);
+    return z === 'A' ? 'โซน A - รถบรรทุกใหญ่' : z === 'B' ? 'โซน B - รถตู้/กระบะ' : '';
+  }
+
+  // QR เก็บลิงก์ ?pass=<รหัสเอกสารคิว> ข้อมูลจริง (ช่อง/เวลา/สถานะ) ดึงสดจาก Firestore ตอนสแกน
+  function passUrl(id) {
+    return location.href.split(/[?#]/)[0] + '?pass=' + encodeURIComponent(id);
+  }
+
+  function makeQrDataUrl(text) {
+    if (typeof qrcode === 'function') {
+      const q = qrcode(0, 'M');
+      q.addData(text);
+      q.make();
+      return q.createDataURL(6, 2);
+    }
+    // สำรอง: ถ้าโหลดไลบรารี QR ไม่ได้
+    return 'https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=' + encodeURIComponent(text);
+  }
+
+  function showQrPass(b) {
+    document.getElementById('passQueueNo').innerText = b.queueNo;
+    document.getElementById('qrImg').src = makeQrDataUrl(passUrl(b.id));
+    document.getElementById('passInfoText').innerText =
+      `ทะเบียน: ${b.plate}\nช่อง: ${b.slot} (${zoneLabel(b.slot)})\nวันที่ ${b.date} เวลา ${b.startTime} - ${b.endTime}`;
+    document.getElementById('qrModal').classList.remove('hidden');
+  }
+
+  function showQrById(id) {
+    const b = bookings.find(x => x.id === id);
+    if (b) showQrPass(b);
+  }
+
+  // ---------- สแกน QR (เจ้าหน้าที่) ----------
+  let scanStream = null, scanRaf = null, scannedId = null, pendingPass = new URLSearchParams(location.search).get('pass');
+
+  function resolveScan(text) {
+    text = String(text || '').trim();
+    if (!text) return null;
+    const m = text.match(/[?&]pass=([^&#\s]+)/);
+    if (m) return bookings.find(b => b.id === decodeURIComponent(m[1])) || null;
+    const byNo = (no) => bookings.filter(b => String(b.queueNo).toUpperCase() === String(no).toUpperCase())
+      .sort((x, y) => String(y.createdAt || '').localeCompare(String(x.createdAt || '')))[0] || null;
+    if (text.startsWith('PASS|')) return byNo(text.split('|')[1]);   // QR รุ่นเก่า
+    return bookings.find(b => b.id === text) || byNo(text);
+  }
+
+  function ymd(d) {
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  }
+
+  function checkBooking(b) {
+    if (b.status === 'cancelled') return { level: 'bad', msg: 'คิวนี้ถูกยกเลิกแล้ว ห้ามเข้า' };
+    if (b.status === 'done') return { level: 'bad', msg: 'คิวนี้เสร็จสิ้นแล้ว (ใช้ซ้ำไม่ได้)' };
+    const now = new Date();
+    const today = ymd(now);
+    if (b.date !== today) return { level: b.date < today ? 'bad' : 'warn', msg: `ไม่ใช่วันที่จอง (จองไว้วันที่ ${b.date})` };
+    const n = now.getHours() * 60 + now.getMinutes();
+    const st = timeToMinutes(b.startTime), en = timeToMinutes(b.endTime);
+    if (b.status === 'arrived') return { level: 'warn', msg: 'ลงทะเบียนเข้าคลังไปแล้ว' };
+    if (n < st) return { level: 'warn', msg: `มาก่อนเวลา ${st - n} นาที (เริ่ม ${b.startTime})` };
+    if (n > en) return { level: 'bad', msg: `เลยเวลาจอง ${n - en} นาที (สิ้นสุด ${b.endTime})` };
+    return { level: 'ok', msg: 'อยู่ในช่วงเวลาที่จอง' };
+  }
+
+  function renderScanResult() {
+    const box = document.getElementById('scanResult');
+    if (!scannedId) { box.innerHTML = ''; return; }
+    const b = bookings.find(x => x.id === scannedId);
+    if (!b) { box.innerHTML = '<div class="scan-banner" style="background:#fee2e2;color:#b91c1c;">❌ ไม่พบคิวนี้ในระบบ</div>'; return; }
+    const c = checkBooking(b);
+    const colors = { ok: ['#dcfce7', '#15803d', '✅'], warn: ['#fef9c3', '#a16207', '⚠️'], bad: ['#fee2e2', '#b91c1c', '❌'] }[c.level];
+    let action = '';
+    if (b.status === 'waiting') action = `<button class="btn-action" style="background:#4f46e5;color:#fff;" onclick="changeStatus('${escapeHtml(b.id)}','arrived')">📍 ยืนยันเข้าคลัง (ถึงแล้ว)</button>`;
+    else if (b.status === 'arrived') action = `<button class="btn-action" style="background:#22c55e;color:#fff;" onclick="changeStatus('${escapeHtml(b.id)}','done')">✅ โหลดเสร็จแล้ว</button>`;
+    box.innerHTML = `
+      <div class="queue-card" style="margin-top:0;">
+        <div class="scan-banner" style="background:${colors[0]};color:${colors[1]};">${colors[2]} ${escapeHtml(c.msg)}</div>
+        <div class="queue-card-title" style="margin-bottom:6px;">${escapeHtml(b.queueNo)} · ${escapeHtml(b.plate)}</div>
+        <div class="queue-card-details">
+          🅿️ <b>ช่อง ${escapeHtml(b.slot)}</b> (${escapeHtml(zoneLabel(b.slot))})<br>
+          📅 ${escapeHtml(b.date)} เวลา <b>${escapeHtml(b.startTime)} - ${escapeHtml(b.endTime)}</b><br>
+          👤 ${escapeHtml(b.driver)} (${escapeHtml(b.phone)})${b.company ? ' | 🏢 ' + escapeHtml(b.company) : ''}<br>
+          🚚 ${escapeHtml(b.truckType)} | สถานะ: ${escapeHtml(STATUS_TH[b.status] || b.status)}
+        </div>
+        ${action ? `<div class="queue-actions">${action}</div>` : ''}
+      </div>`;
+  }
+
+  function handleScan(text) {
+    if (currentRole !== 'staff') return;
+    const b = resolveScan(text);
+    scannedId = b ? b.id : null;
+    if (!b) {
+      document.getElementById('scanResult').innerHTML = '<div class="scan-banner" style="background:#fee2e2;color:#b91c1c;">❌ ไม่พบคิวนี้ในระบบ (QR ไม่ถูกต้อง หรือข้อมูลยังโหลดไม่เสร็จ)</div>';
+      return;
+    }
+    renderScanResult();
+  }
+
+  async function startScan() {
+    if (typeof jsQR !== 'function') { alert('โหลดตัวอ่าน QR ไม่สำเร็จ ตรวจสอบอินเทอร์เน็ตแล้วรีเฟรชหน้า'); return; }
+    try {
+      scanStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' } }, audio: false });
+    } catch (e) {
+      alert('เปิดกล้องไม่ได้: ' + e.message + '\n(ต้องกดอนุญาตกล้อง และเปิดผ่านเว็บ https)');
+      return;
+    }
+    const v = document.getElementById('scanVideo');
+    v.srcObject = scanStream;
+    await v.play();
+    document.getElementById('scanBox').classList.remove('hidden');
+    const cv = document.createElement('canvas');
+    const ctx = cv.getContext('2d', { willReadFrequently: true });
+    const tick = () => {
+      if (!scanStream) return;
+      if (v.readyState === v.HAVE_ENOUGH_DATA && v.videoWidth) {
+        const sc = Math.min(1, 640 / v.videoWidth);
+        cv.width = Math.round(v.videoWidth * sc);
+        cv.height = Math.round(v.videoHeight * sc);
+        ctx.drawImage(v, 0, 0, cv.width, cv.height);
+        const img = ctx.getImageData(0, 0, cv.width, cv.height);
+        const code = jsQR(img.data, img.width, img.height, { inversionAttempts: 'dontInvert' });
+        if (code && code.data) { stopScan(); handleScan(code.data); return; }
+      }
+      scanRaf = requestAnimationFrame(tick);
+    };
+    tick();
+  }
+
+  function stopScan() {
+    if (scanRaf) cancelAnimationFrame(scanRaf);
+    scanRaf = null;
+    if (scanStream) scanStream.getTracks().forEach(t => t.stop());
+    scanStream = null;
+    document.getElementById('scanBox').classList.add('hidden');
   }
 
   function closeQrModal() {
@@ -598,6 +753,9 @@
     }
 
     box.innerHTML = mine.map(b => {
+      const qrBtn = (b.status === 'waiting' || b.status === 'arrived')
+        ? `<button class="btn-action" onclick="showQrById('${escapeHtml(b.id)}')">📱 แสดง QR</button>`
+        : '';
       const cancelBtn = b.status === 'waiting'
         ? `<button class="btn-action" style="color:red" onclick="cancelMyQueue('${escapeHtml(b.id)}')">ยกเลิกคิวนี้</button>`
         : '';
@@ -608,12 +766,19 @@
             <span class="status-pill ${escapeHtml(b.status)}">${escapeHtml(STATUS_TH[b.status] || b.status)}</span>
           </div>
           <div class="queue-card-details">📅 ${escapeHtml(b.date)} (${escapeHtml(b.startTime)} - ${escapeHtml(b.endTime)})<br>🚚 ${escapeHtml(b.truckType)} | 📝 ${escapeHtml(b.remark)}</div>
-          ${cancelBtn ? `<div class="queue-actions">${cancelBtn}</div>` : ''}
+          ${(qrBtn || cancelBtn) ? `<div class="queue-actions">${qrBtn}${cancelBtn}</div>` : ''}
         </div>`;
     }).join('');
   }
 
   function updateAllViews() {
+    // เปิดจากลิงก์ใน QR (?pass=...) ด้วยกล้องมือถือ: เจ้าหน้าที่จะเห็นผลตรวจคิวทันที
+    if (pendingPass && currentRole === 'staff') {
+      scannedId = (bookings.find(b => b.id === pendingPass) || {}).id || null;
+      pendingPass = null;
+      history.replaceState(null, '', location.href.split(/[?#]/)[0]);
+    }
+    renderScanResult();
     renderMyQueues();
     updateSlotsAvailability();
     renderStats();
